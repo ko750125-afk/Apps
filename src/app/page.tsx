@@ -8,6 +8,17 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center">
       {/* Hero Section */}
       <section className="relative w-full pt-40 pb-20 px-6 flex flex-col items-center text-center overflow-hidden">
+        {/* Admin Quick Access - Floating Top Right */}
+        <div className="absolute top-8 right-8 z-50">
+          <Link 
+            href="/admin" 
+            className="group flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/10 hover:border-electric-cyan/50 hover:bg-electric-cyan/5 transition-all duration-300"
+          >
+            <div className="w-2 h-2 rounded-full bg-electric-cyan animate-pulse" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-steel group-hover:text-electric-cyan transition-colors">Admin Hub</span>
+          </Link>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -56,7 +67,6 @@ export default function Home() {
           </p>
           <div className="flex items-center space-x-6 text-xs uppercase tracking-widest font-semibold">
             <Link href="/" className="hover:text-electric-cyan transition-colors">Home</Link>
-            <Link href="/admin" className="hover:text-electric-cyan transition-colors opacity-50 hover:opacity-100">Admin</Link>
           </div>
         </div>
       </footer>
