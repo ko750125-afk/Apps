@@ -1,3 +1,5 @@
+'use client';
+
 import AppGrid from '@/components/layout/AppGrid';
 import { Rocket } from 'lucide-react';
 import Link from 'next/link';
