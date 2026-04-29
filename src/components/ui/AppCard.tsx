@@ -10,7 +10,7 @@ interface AppCardProps {
 }
 
 export default function AppCard({ app, index }: AppCardProps) {
-  const CardContent = () => (
+  const cardContent = (
     <>
       {app.image && (
         <div className="relative w-full h-48 shrink-0 overflow-hidden bg-[#f5f5f7]">
@@ -60,11 +60,11 @@ export default function AppCard({ app, index }: AppCardProps) {
           rel="noopener noreferrer"
           className={wrapperClass}
         >
-          <CardContent />
+          {cardContent}
         </a>
       ) : (
         <div className={wrapperClass}>
-          <CardContent />
+          {cardContent}
         </div>
       )}
     </motion.div>
