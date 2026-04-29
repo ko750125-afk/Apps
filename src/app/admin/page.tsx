@@ -42,7 +42,10 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    fetchApps();
+    const timer = setTimeout(() => {
+      fetchApps();
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const handleDelete = async (id: string) => {

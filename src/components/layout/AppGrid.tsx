@@ -29,8 +29,8 @@ export default function AppGrid() {
     // Check if API key is set
     if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY === 'your_api_key') {
       console.warn('Firebase API key not found. Using static data.');
-      setLoading(false);
-      return;
+      const timer = setTimeout(() => setLoading(false), 0);
+      return () => clearTimeout(timer);
     }
 
     const q = query(collection(db, '18_apps_list'), orderBy('name', 'asc'));

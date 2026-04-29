@@ -27,8 +27,9 @@ export default function LoginPage() {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       router.push('/admin');
-    } catch (err: any) {
-      setError(`Login failed: ${err.code || err.message}`);
+    } catch (err: unknown) {
+      const error = err as { code?: string; message?: string };
+      setError(`Login failed: ${error.code || error.message || 'Unknown error'}`);
       console.error('Firebase Auth Error:', err);
     } finally {
       setLoading(false);

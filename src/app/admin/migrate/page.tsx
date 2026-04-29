@@ -82,8 +82,9 @@ export default function MigratePage() {
       setTargetAppIds(targetIds);
       
       setStatus('idle');
-    } catch (err: any) {
-      console.error('Fetch error:', err);
+    } catch (err: unknown) {
+      const error = err as Error;
+      console.error('Fetch error:', error);
       setError(`Connection failed. Check collection name or local import: "${sourceCollection}"`);
       setStatus('error');
     } finally {
@@ -92,7 +93,10 @@ export default function MigratePage() {
   };
 
   useEffect(() => {
-    fetchData();
+    const timer = setTimeout(() => {
+      fetchData();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [sourceCollection]);
 
   const handleMigrateSingle = async (app: AppData) => {
@@ -108,9 +112,10 @@ export default function MigratePage() {
 
       await setDoc(doc(db, TARGET_COLLECTION, app.id), portfolioData);
       setTargetAppIds(prev => new Set(prev).add(app.id));
-    } catch (err: any) {
-      console.error('Migration error:', err);
-      alert(`Migration failed: ${err.message}`);
+    } catch (err: unknown) {
+      const error = err as Error;
+      console.error('Migration error:', error);
+      alert(`Migration failed: ${error.message}`);
     } finally {
       setMigratingId(null);
     }
@@ -138,8 +143,9 @@ export default function MigratePage() {
       appsToMigrate.forEach(app => newIds.add(app.id));
       setTargetAppIds(newIds);
       setSelectedIds(new Set());
-    } catch (err: any) {
-      alert(`Bulk migration failed: ${err.message}`);
+    } catch (err: unknown) {
+      const error = err as Error;
+      alert(`Bulk migration failed: ${error.message}`);
     } finally {
       setBulkMigrating(false);
     }
@@ -169,11 +175,9 @@ export default function MigratePage() {
     });
   };
 
-  const filteredApps = useMemo(() => 
-    sourceApps.filter(app => 
-      app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.category.toLowerCase().includes(searchTerm.toLowerCase())
-    ), [sourceApps, searchTerm]
+  const filteredApps = sourceApps.filter(app => 
+    app.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    app.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (

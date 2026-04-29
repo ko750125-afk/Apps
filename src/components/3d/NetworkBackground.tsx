@@ -5,46 +5,37 @@ import { Canvas, useFrame } from '@react-three/fiber';
 import { Points, PointMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
-function ParticleSphere(props: any) {
+const SPHERE_COUNT = 1500;
+const spherePoints = new Float32Array(SPHERE_COUNT * 3);
+const radius = 1.5;
+for (let i = 0; i < SPHERE_COUNT; i++) {
+  const u = Math.random();
+  const v = Math.random();
+  const theta = 2 * Math.PI * u;
+  const phi = Math.acos(2 * v - 1);
+  const r = radius * Math.pow(Math.random(), 1 / 3);
+  
+  spherePoints[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+  spherePoints[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+  spherePoints[i * 3 + 2] = r * Math.cos(phi);
+}
+
+const STARS_COUNT = 60;
+const starsPoints = new Float32Array(STARS_COUNT * 3);
+for (let i = 0; i < STARS_COUNT; i++) {
+  const u = Math.random();
+  const v = Math.random();
+  const theta = 2 * Math.PI * u;
+  const phi = Math.acos(2 * v - 1);
+  const r = 2.2 * Math.pow(Math.random(), 1 / 3);
+  starsPoints[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+  starsPoints[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+  starsPoints[i * 3 + 2] = r * Math.cos(phi);
+}
+
+function ParticleSphere(props: Record<string, unknown>) {
   const ref = useRef<THREE.Points>(null!);
   const ref2 = useRef<THREE.Points>(null!);
-  
-  // 1500개의 메인 입자 (성능을 위해 2500 -> 1500으로 조정하되 크기 조절로 시각적 밀도 유지)
-  const sphere = useMemo(() => {
-    const count = 1500;
-    const points = new Float32Array(count * 3);
-    const radius = 1.5;
-    
-    for (let i = 0; i < count; i++) {
-      const u = Math.random();
-      const v = Math.random();
-      const theta = 2 * Math.PI * u;
-      const phi = Math.acos(2 * v - 1);
-      const r = radius * Math.pow(Math.random(), 1 / 3);
-      
-      points[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-      points[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-      points[i * 3 + 2] = r * Math.cos(phi);
-    }
-    return points;
-  }, []);
-
-  // 60개의 큰 빛나는 입자 (포인트 요소)
-  const stars = useMemo(() => {
-    const count = 60;
-    const points = new Float32Array(count * 3);
-    for (let i = 0; i < count; i++) {
-      const u = Math.random();
-      const v = Math.random();
-      const theta = 2 * Math.PI * u;
-      const phi = Math.acos(2 * v - 1);
-      const r = 2.2 * Math.pow(Math.random(), 1 / 3);
-      points[i * 3] = r * Math.sin(phi) * Math.cos(theta);
-      points[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
-      points[i * 3 + 2] = r * Math.cos(phi);
-    }
-    return points;
-  }, []);
 
   useFrame((state, delta) => {
     if (ref.current) {
@@ -59,7 +50,7 @@ function ParticleSphere(props: any) {
 
   return (
     <group rotation={[0, 0, Math.PI / 4]}>
-      <Points ref={ref} positions={sphere} stride={3} frustumCulled={false} {...props}>
+      <Points ref={ref} positions={spherePoints} stride={3} frustumCulled={false} {...props}>
         <PointMaterial
           transparent
           color="#00f0ff"
@@ -70,7 +61,7 @@ function ParticleSphere(props: any) {
           opacity={0.4}
         />
       </Points>
-      <Points ref={ref2} positions={stars} stride={3} frustumCulled={false}>
+      <Points ref={ref2} positions={starsPoints} stride={3} frustumCulled={false}>
         <PointMaterial
           transparent
           color="#8a2be2"
