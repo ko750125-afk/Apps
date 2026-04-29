@@ -3,28 +3,29 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { Rocket, ShieldCheck, User, Menu, X, LogOut, LayoutDashboard } from 'lucide-react';
+import { Menu, X, LogOut, LayoutDashboard, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 
 export default function Header() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   
   const { scrollY } = useScroll();
   const headerBg = useTransform(
     scrollY,
     [0, 50],
-    ['rgba(5, 5, 10, 0)', 'rgba(5, 5, 10, 0.85)']
+    ['rgba(251, 251, 253, 0.8)', 'rgba(251, 251, 253, 0.95)']
   );
   const headerBlur = useTransform(
     scrollY,
     [0, 50],
-    ['blur(0px)', 'blur(20px)']
+    ['blur(10px)', 'blur(20px)']
   );
 
   useEffect(() => {
@@ -52,79 +53,69 @@ export default function Header() {
     }
   };
 
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
+
   return (
     <motion.header
       style={{ backgroundColor: headerBg, backdropFilter: headerBlur }}
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b",
-        isScrolled ? "border-white/10 py-3 shadow-[0_4px_30px_rgba(0,0,0,0.5)]" : "border-transparent py-6"
+        "fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b",
+        isScrolled ? "border-black/5 py-4 shadow-sm" : "border-transparent py-6"
       )}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-3 group relative">
-          <div className="relative">
-            <div className="absolute -inset-2 bg-electric-cyan/20 blur-xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-electric-cyan to-neon-purple p-[1px] group-hover:rotate-[15deg] transition-all duration-500 shadow-lg shadow-electric-cyan/20">
-              <div className="w-full h-full rounded-xl bg-space-black flex items-center justify-center">
-                <Rocket className="w-5 h-5 text-electric-cyan group-hover:animate-pulse" />
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col">
-            <span className="font-display font-bold text-xl tracking-tight text-starlight-white leading-none">
-              Cyber<span className="text-electric-cyan">Cosmos</span>
-            </span>
-            <span className="text-[10px] text-muted-steel uppercase tracking-[0.2em] font-medium mt-1 group-hover:text-electric-cyan/80 transition-colors">
-              Portfolio Engine
-            </span>
-          </div>
+        <Link href="/" className="flex items-center gap-2 group">
+          <span className="font-semibold text-xl tracking-tight text-[#1d1d1f]">
+            Portfolio
+          </span>
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center space-x-10">
-          <Link href="/" className="relative text-sm font-medium text-muted-steel hover:text-starlight-white transition-all group">
-            Portfolio
-            <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-electric-cyan transition-all group-hover:w-full" />
+        <nav className="hidden md:flex items-center space-x-8">
+          <Link href="/" className="text-[13px] font-medium text-[#1d1d1f] hover:text-black transition-colors">
+            Apps
           </Link>
-          <Link href="#" className="relative text-sm font-medium text-muted-steel hover:text-starlight-white transition-all group">
-            Services
-            <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-electric-cyan transition-all group-hover:w-full" />
+          <Link href="#" className="text-[13px] font-medium text-[#86868b] hover:text-[#1d1d1f] transition-colors">
+            About
           </Link>
           
-          <div className="h-4 w-[1px] bg-white/10 mx-2" />
+          <div className="h-4 w-[1px] bg-black/10 mx-2" />
           
           {user ? (
             <div className="flex items-center gap-4">
               <Link 
                 href="/admin" 
-                className="flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-neon-purple to-electric-cyan text-white text-[11px] font-bold uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(138,43,226,0.4)]"
+                className="flex items-center gap-2 text-[13px] font-medium text-[#1d1d1f] hover:text-[#0066cc] transition-colors"
               >
-                <LayoutDashboard className="w-3.5 h-3.5" />
-                System Dashboard
+                <LayoutDashboard className="w-4 h-4" />
+                Admin
               </Link>
               <button 
                 onClick={handleLogout}
-                className="p-2 rounded-full bg-white/5 border border-white/10 text-muted-steel hover:text-neon-pink hover:bg-neon-pink/10 hover:border-neon-pink/30 transition-all"
+                className="text-[13px] font-medium text-[#86868b] hover:text-red-500 transition-colors flex items-center gap-1"
                 title="Logout"
               >
                 <LogOut className="w-4 h-4" />
+                Logout
               </button>
             </div>
           ) : (
             <Link 
               href="/admin/login" 
-              className="flex items-center gap-2 px-5 py-2 rounded-full bg-white/5 border border-electric-cyan/30 text-electric-cyan text-[11px] font-bold uppercase tracking-widest hover:bg-electric-cyan/10 hover:border-electric-cyan transition-all group shadow-[0_0_15px_rgba(0,255,255,0.1)] hover:shadow-[0_0_20px_rgba(0,255,255,0.2)]"
+              className="flex items-center gap-1 text-[13px] font-medium text-[#86868b] hover:text-[#1d1d1f] transition-colors"
             >
-              <User className="w-3.5 h-3.5" />
-              Admin
+              <User className="w-4 h-4" />
+              Sign In
             </Link>
           )}
         </nav>
 
         {/* Mobile Toggle */}
         <button 
-          className="md:hidden p-2 rounded-lg bg-white/5 text-starlight-white"
+          className="md:hidden p-2 text-[#1d1d1f]"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
           {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -138,26 +129,28 @@ export default function Header() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden overflow-hidden bg-space-navy/95 backdrop-blur-xl border-b border-white/10"
+            className="md:hidden overflow-hidden bg-[#fbfbfd]/95 backdrop-blur-xl border-b border-black/5"
           >
             <div className="p-6 flex flex-col space-y-6">
-              <Link href="/" onClick={() => setMobileMenuOpen(false)} className="text-starlight-white font-medium flex items-center justify-between">
-                Portfolio <span className="text-[10px] text-electric-cyan">Exploration</span>
+              <Link href="/" onClick={() => setMobileMenuOpen(false)} className="text-[#1d1d1f] font-medium">
+                Apps
               </Link>
-              <Link href="#" onClick={() => setMobileMenuOpen(false)} className="text-starlight-white font-medium">Services</Link>
-              <div className="h-[1px] bg-white/5 w-full" />
+              <Link href="#" onClick={() => setMobileMenuOpen(false)} className="text-[#86868b] font-medium">
+                About
+              </Link>
+              <div className="h-[1px] bg-black/5 w-full" />
               {user ? (
                 <>
-                  <Link href="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-neon-purple font-bold">
-                    <LayoutDashboard className="w-5 h-5" /> System Dashboard
+                  <Link href="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-[#1d1d1f] font-medium">
+                    <LayoutDashboard className="w-5 h-5" /> Admin
                   </Link>
-                  <button onClick={handleLogout} className="flex items-center gap-3 text-neon-pink font-bold text-left">
-                    <LogOut className="w-5 h-5" /> Terminate Session
+                  <button onClick={handleLogout} className="flex items-center gap-3 text-red-500 font-medium text-left">
+                    <LogOut className="w-5 h-5" /> Logout
                   </button>
                 </>
               ) : (
-                <Link href="/admin/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-starlight-white font-bold">
-                  <User className="w-5 h-5" /> Admin Portal
+                <Link href="/admin/login" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-[#86868b] font-medium">
+                  <User className="w-5 h-5" /> Sign In
                 </Link>
               )}
             </div>

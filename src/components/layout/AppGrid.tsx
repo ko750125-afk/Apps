@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { db } from '@/lib/firebase';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { apps as staticApps, AppData, Category } from '@/data/apps';
 import AppCard from '@/components/ui/AppCard';
 import { cn } from '@/lib/utils';
@@ -26,38 +26,41 @@ export default function AppGrid() {
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    const fetchApps = async () => {
-      // Check if API key is set
-      if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY === 'your_api_key') {
-        console.warn('Firebase API key not found. Using static data.');
-        setLoading(false);
-        return;
-      }
+    // Check if API key is set
+    if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY || process.env.NEXT_PUBLIC_FIREBASE_API_KEY === 'your_api_key') {
+      console.warn('Firebase API key not found. Using static data.');
+      setLoading(false);
+      return;
+    }
 
-      try {
-        const q = query(collection(db, '18_apps_list'), orderBy('name', 'asc'));
-        const querySnapshot = await getDocs(q);
-        
-        if (!querySnapshot.empty) {
-          const appsData = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          })) as AppData[];
-          setApps(appsData);
-        }
-      } catch (error) {
-        console.error('Error fetching from Firestore, falling back to static data:', error);
-        setError(true);
-      } finally {
-        setLoading(false);
+    const q = query(collection(db, '18_apps_list'), orderBy('name', 'asc'));
+    
+    // Use onSnapshot for real-time updates
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      if (!querySnapshot.empty) {
+        const appsData = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as AppData[];
+        setApps(appsData);
+        setError(false);
+      } else {
+        // If collection is empty but connection is fine
+        setApps([]);
       }
-    };
+      setLoading(false);
+    }, (error) => {
+      console.error('Error listening to Firestore, falling back to static data:', error);
+      setError(true);
+      setLoading(false);
+    });
 
-    fetchApps();
+    return () => unsubscribe();
   }, []);
 
   const filteredApps = apps.filter(app => 
-    activeCategory === 'All' ? true : app.category === activeCategory
+    (activeCategory === 'All' ? true : app.category === activeCategory) &&
+    app.status !== 'Repair'
   );
 
   return (
@@ -77,20 +80,20 @@ export default function AppGrid() {
             key={category}
             onClick={() => setActiveCategory(category)}
             className={cn(
-              "relative px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-500 backdrop-blur-xl border overflow-hidden",
+              "relative px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-300 overflow-hidden",
               activeCategory === category
-                ? "bg-electric-cyan/20 border-electric-cyan text-electric-cyan shadow-[0_0_25px_rgba(0,240,255,0.4)] scale-105"
-                : "bg-white/5 border-white/10 text-muted-steel hover:bg-white/10 hover:text-starlight-white hover:border-white/20"
+                ? "text-white"
+                : "bg-transparent text-[#86868b] hover:text-[#1d1d1f]"
             )}
           >
             {activeCategory === category && (
               <motion.div
                 layoutId="activeFilter"
-                className="absolute inset-0 bg-electric-cyan/10 -z-10"
+                className="absolute inset-0 bg-[#1d1d1f] rounded-full -z-10"
                 transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
               />
             )}
-            <span className="relative z-10 tracking-wider">{category}</span>
+            <span className="relative z-10">{category}</span>
           </button>
         ))}
       </div>
@@ -129,9 +132,9 @@ export default function AppGrid() {
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center py-32 text-muted-steel font-display text-lg tracking-widest uppercase opacity-50"
+          className="text-center py-32 text-[#86868b] font-medium text-lg"
         >
-          No cosmic entities found in this sector.
+          No applications found in this category.
         </motion.div>
       )}
     </div>

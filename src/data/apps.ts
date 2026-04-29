@@ -7,6 +7,8 @@ export type Category =
   | 'Finance' 
   | 'Others';
 
+export type AppStatus = 'Exhibit' | 'Repair';
+
 export interface AppData {
   id: string;
   name: string;
@@ -16,6 +18,9 @@ export interface AppData {
   date: string;
   featured: boolean;
   description?: string;
+  image?: string;
+  status?: AppStatus;
+  memo?: string;
 }
 
 export const apps: AppData[] = [
@@ -27,7 +32,8 @@ export const apps: AppData[] = [
     category: 'Productivity',
     date: 'Apr 1',
     featured: true,
-    description: '기능 개선 및 UI/UX가 고도화된 워크플로우 관리 허브',
+    description: '기능 개선 및 UI/UX가 고도화된 워크플로우 관리 허브',,
+    image: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'study-archive',
@@ -37,7 +43,8 @@ export const apps: AppData[] = [
     category: 'Others',
     date: 'Mar 26',
     featured: true,
-    description: '개인 스터디 기록 및 아카이빙 플랫폼',
+    description: '개인 스터디 기록 및 아카이빙 플랫폼',,
+    image: 'https://images.unsplash.com/photo-1456406644174-8ddd4cd52a06?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: '14_studydev',
@@ -47,7 +54,8 @@ export const apps: AppData[] = [
     category: 'Productivity',
     date: '2d ago',
     featured: true,
-    description: 'Firebase 인증 및 히스토리 동기화를 지원하는 개발 학습 도구',
+    description: 'Firebase 인증 및 히스토리 동기화를 지원하는 개발 학습 도구',,
+    image: 'https://images.unsplash.com/photo-1504639725590-34d0984388bd?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'ai-emotion-diary',
@@ -57,7 +65,8 @@ export const apps: AppData[] = [
     category: 'AI & Smart',
     date: 'Apr 5',
     featured: false,
-    description: '익명 로그인 및 AI 감정 분석 기능을 제공하는 일기장',
+    description: '익명 로그인 및 AI 감정 분석 기능을 제공하는 일기장',,
+    image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'notion-clone',
@@ -67,7 +76,8 @@ export const apps: AppData[] = [
     category: 'Productivity',
     date: 'Apr 25',
     featured: false,
-    description: 'Supabase를 연동한 노션 클론 코딩 프로젝트',
+    description: 'Supabase를 연동한 노션 클론 코딩 프로젝트',,
+    image: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'smart-qr',
@@ -76,7 +86,8 @@ export const apps: AppData[] = [
     repo: 'ko750125-afk/smart-qr',
     category: 'Utility & Tools',
     date: 'Apr 22',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'qrmaker',
@@ -85,7 +96,8 @@ export const apps: AppData[] = [
     repo: 'ko750125-afk/QRmaker',
     category: 'Utility & Tools',
     date: '6h ago',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'grab-pdf',
@@ -95,7 +107,8 @@ export const apps: AppData[] = [
     category: 'Utility & Tools',
     date: '6h ago',
     featured: false,
-    description: 'PDF 추출 및 병합 유틸리티',
+    description: 'PDF 추출 및 병합 유틸리티',,
+    image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'smart-neon-calculator',
@@ -104,7 +117,8 @@ export const apps: AppData[] = [
     repo: 'ko750125-afk/calculator',
     category: 'Utility & Tools',
     date: 'Apr 22',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'memo',
@@ -114,7 +128,8 @@ export const apps: AppData[] = [
     category: 'Productivity',
     date: 'Apr 21',
     featured: false,
-    description: '달력, 음력 토글이 포함된 메모장 앱',
+    description: '달력, 음력 토글이 포함된 메모장 앱',,
+    image: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'courier-tracker',
@@ -124,7 +139,8 @@ export const apps: AppData[] = [
     category: 'Utility & Tools',
     date: 'Apr 14',
     featured: false,
-    description: '실시간 데이터 동기화 택배 조회기',
+    description: '실시간 데이터 동기화 택배 조회기',,
+    image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'global-time-schedule',
@@ -133,7 +149,8 @@ export const apps: AppData[] = [
     repo: 'ko750125-afk/Global-Time-Schedule',
     category: 'Utility & Tools',
     date: 'Apr 11',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'gift_fund',
@@ -142,7 +159,8 @@ export const apps: AppData[] = [
     repo: 'ko750125-afk/gift_fund',
     category: 'Finance',
     date: 'Apr 6',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'sunbi-go',
@@ -151,7 +169,8 @@ export const apps: AppData[] = [
     repo: 'ko750125-afk/sunbi-go',
     category: 'Games & Edu',
     date: 'Apr 1',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'study-archive-j582',
@@ -160,7 +179,8 @@ export const apps: AppData[] = [
     repo: 'ko750125-afk/study-archive',
     category: 'Others',
     date: 'Apr 1',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'cyber-mole',
@@ -169,7 +189,8 @@ export const apps: AppData[] = [
     repo: null,
     category: 'Games & Edu',
     date: 'Mar 18',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'math-apple',
@@ -178,7 +199,8 @@ export const apps: AppData[] = [
     repo: 'ko750125-afk/math-apple',
     category: 'Games & Edu',
     date: 'Apr 19',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'mbti-test',
@@ -187,7 +209,8 @@ export const apps: AppData[] = [
     repo: 'ko750125-afk/MBTI-test',
     category: 'Others',
     date: 'Mar 31',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'mobile-wedding-invitation',
@@ -196,7 +219,8 @@ export const apps: AppData[] = [
     repo: 'ko750125-afk/mobile-invitation',
     category: 'Others',
     date: 'Apr 22',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'my-first-idea',
@@ -205,7 +229,8 @@ export const apps: AppData[] = [
     repo: 'ko750125-afk/my-first-idea',
     category: 'Others',
     date: 'Mar 30',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'voicecam-memo',
@@ -214,7 +239,8 @@ export const apps: AppData[] = [
     repo: 'ko750125-afk/develop-PRD-master',
     category: 'AI & Smart',
     date: 'Mar 18',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'pay-cycle-app',
@@ -223,7 +249,8 @@ export const apps: AppData[] = [
     repo: 'ko750125-afk/pay-cycle',
     category: 'Finance',
     date: 'Mar 22',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'ai-build-coach',
@@ -232,7 +259,8 @@ export const apps: AppData[] = [
     repo: null,
     category: 'AI & Smart',
     date: 'Mar 18',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'ai-build-architect',
@@ -241,7 +269,8 @@ export const apps: AppData[] = [
     repo: null,
     category: 'AI & Smart',
     date: 'Mar 17',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'kids-math-monster',
@@ -250,7 +279,8 @@ export const apps: AppData[] = [
     repo: null,
     category: 'Games & Edu',
     date: 'Mar 11',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'reflex-vocab',
@@ -259,7 +289,8 @@ export const apps: AppData[] = [
     repo: null,
     category: 'Games & Edu',
     date: 'Feb 28',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'reflex-vocab-en',
@@ -268,7 +299,8 @@ export const apps: AppData[] = [
     repo: null,
     category: 'Games & Edu',
     date: 'Feb 28',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'kanpyeon-budget',
@@ -277,7 +309,8 @@ export const apps: AppData[] = [
     repo: null,
     category: 'Finance',
     date: 'Feb 23',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'past-life-analyzer',
@@ -286,7 +319,8 @@ export const apps: AppData[] = [
     repo: null,
     category: 'AI & Smart',
     date: 'Feb 16',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'frontend',
@@ -295,7 +329,8 @@ export const apps: AppData[] = [
     repo: null,
     category: 'Others',
     date: '18h ago',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'backend',
@@ -304,7 +339,8 @@ export const apps: AppData[] = [
     repo: null,
     category: 'Others',
     date: '18h ago',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: '100-websites',
@@ -313,7 +349,8 @@ export const apps: AppData[] = [
     repo: null,
     category: 'Others',
     date: 'Mar 31',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'apps-hub',
@@ -322,7 +359,8 @@ export const apps: AppData[] = [
     repo: null,
     category: 'Others',
     date: 'Mar 11',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=800&auto=format&fit=crop'
   },
   {
     id: 'builder-workflow-hub',
@@ -331,6 +369,7 @@ export const apps: AppData[] = [
     repo: null,
     category: 'Productivity',
     date: 'Mar 23',
-    featured: false,
+    featured: false,,
+    image: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?q=80&w=800&auto=format&fit=crop'
   }
 ];

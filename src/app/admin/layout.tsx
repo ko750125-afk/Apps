@@ -3,50 +3,59 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { LayoutGrid, ShieldCheck } from 'lucide-react';
+import { LayoutGrid, ShieldCheck, Home } from 'lucide-react';
 import AuthGuard from '@/components/admin/AuthGuard';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const isLoginPage = pathname === '/admin/login';
   
+  const navBar = (
+    <nav className="fixed top-0 left-0 right-0 z-[50] bg-[#fbfbfd]/90 backdrop-blur-xl border-b border-black/5 py-3 px-6">
+      <div className="max-w-7xl mx-auto flex items-center justify-between">
+        <div className="flex items-center gap-6">
+          <Link 
+            href="/" 
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/5 text-[#1d1d1f] hover:bg-black/10 transition-colors"
+          >
+            <Home className="w-4 h-4" />
+            <span className="text-[13px] font-medium">Return to Home</span>
+          </Link>
+          <div className="h-4 w-[1px] bg-black/10" />
+          <Link href="/admin" className="flex items-center gap-1.5 text-[#1d1d1f] hover:text-[#0066cc] transition-colors">
+            <ShieldCheck className="w-4 h-4" />
+            <span className="text-[13px] font-medium">Admin Dashboard</span>
+          </Link>
+        </div>
+        
+        {!isLoginPage && (
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-medium text-[#86868b] uppercase tracking-wider hidden sm:block">Session Active</span>
+            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          </div>
+        )}
+      </div>
+    </nav>
+  );
+
+  const content = (
+    <div className="relative min-h-screen bg-[#fbfbfd] text-[#1d1d1f]">
+      {navBar}
+      {/* Page Content: padding-top ensures content is not hidden under the fixed nav */}
+      <div className="relative pt-20 pb-12">
+        {children}
+      </div>
+    </div>
+  );
+
   // Don't guard the login page itself
-  if (pathname === '/admin/login') {
-    return <>{children}</>;
+  if (isLoginPage) {
+    return content;
   }
 
   return (
     <AuthGuard>
-      <div className="relative min-h-screen bg-[#05050a]">
-        {/* Admin Navigation Bar */}
-        <nav className="fixed top-0 left-0 right-0 z-[60] bg-black/40 backdrop-blur-xl border-b border-white/5 py-3 px-6">
-          <div className="max-w-7xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-6">
-              <Link 
-                href="/" 
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-400 hover:text-cyan-400 hover:border-cyan-500/50 transition-all group"
-              >
-                <LayoutGrid className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" />
-                <span className="text-[10px] font-black uppercase tracking-widest">Exit to Home</span>
-              </Link>
-              <div className="h-4 w-[1px] bg-white/10" />
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-cyan-500" />
-                <span className="text-[10px] font-black text-white uppercase tracking-[0.3em]">Control Center</span>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              <span className="text-[9px] font-bold text-gray-600 uppercase tracking-widest hidden sm:block">Admin Session Active</span>
-              <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
-            </div>
-          </div>
-        </nav>
-
-        {/* Page Content */}
-        <div className="relative pt-4">
-          {children}
-        </div>
-      </div>
+      {content}
     </AuthGuard>
   );
 }

@@ -36,7 +36,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // Source collection name
-const DEFAULT_SOURCE_COLLECTION = '18_all_apps_registry';
+const DEFAULT_SOURCE_COLLECTION = 'local';
 const TARGET_COLLECTION = '18_apps_list';
 
 export default function MigratePage() {
@@ -56,15 +56,25 @@ export default function MigratePage() {
     setLoading(true);
     setStatus('loading');
     try {
-      const sourceQuery = query(collection(db, sourceCollection), orderBy('name', 'asc'));
-      const sourceSnapshot = await getDocs(sourceQuery);
-      const sourceData = sourceSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          ...data,
-          id: doc.id // Ensure document ID is the ID we use
-        };
-      }) as AppData[];
+      let sourceData: AppData[] = [];
+      
+      if (sourceCollection.toLowerCase() === 'local') {
+        // Load from local apps.ts
+        const { apps: localApps } = await import('@/data/apps');
+        sourceData = [...localApps];
+      } else {
+        // Load from Firestore registry
+        const sourceQuery = query(collection(db, sourceCollection), orderBy('name', 'asc'));
+        const sourceSnapshot = await getDocs(sourceQuery);
+        sourceData = sourceSnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            ...data,
+            id: doc.id // Ensure document ID is the ID we use
+          };
+        }) as AppData[];
+      }
+      
       setSourceApps(sourceData);
 
       const targetSnapshot = await getDocs(collection(db, TARGET_COLLECTION));
@@ -74,7 +84,7 @@ export default function MigratePage() {
       setStatus('idle');
     } catch (err: any) {
       console.error('Fetch error:', err);
-      setError(`Registry connection failed. Check collection name: "${sourceCollection}"`);
+      setError(`Connection failed. Check collection name or local import: "${sourceCollection}"`);
       setStatus('error');
     } finally {
       setLoading(false);
@@ -195,7 +205,17 @@ export default function MigratePage() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+          <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-center">
+            <button
+              onClick={() => {
+                setSourceCollection('local');
+                // Timeout needed to let state update before fetching
+                setTimeout(fetchData, 50);
+              }}
+              className="px-4 py-3 rounded-2xl bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10 transition-all text-xs font-bold whitespace-nowrap"
+            >
+              Load apps.ts
+            </button>
             <div className="relative group">
               <div className="absolute inset-0 bg-white/5 blur-md rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
               <Database className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-hover:text-cyan-400 transition-colors z-10" />
@@ -203,8 +223,9 @@ export default function MigratePage() {
                 type="text"
                 value={sourceCollection}
                 onChange={(e) => setSourceCollection(e.target.value)}
-                placeholder="Source Collection"
-                className="relative bg-black/60 border border-white/10 text-white pl-11 pr-4 py-3 rounded-2xl focus:outline-none focus:border-cyan-500/50 transition-all text-xs font-bold w-full md:w-64 backdrop-blur-xl"
+                placeholder="'local' or collection"
+                title="Type 'local' to use apps.ts, or type a Firestore collection name"
+                className="relative bg-black/60 border border-white/10 text-white pl-11 pr-4 py-3 rounded-2xl focus:outline-none focus:border-cyan-500/50 transition-all text-xs font-bold w-full md:w-[200px] backdrop-blur-xl"
               />
             </div>
             <button 
