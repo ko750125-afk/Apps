@@ -32,7 +32,7 @@ export const apps: AppData[] = [
     category: 'Productivity',
     date: 'Apr 1',
     featured: true,
-    description: '기능 개선 및 UI/UX가 고도화된 워크플로우 관리 허브',,
+    description: '기능 개선 및 UI/UX가 고도화된 워크플로우 관리 허브',
     image: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?q=80&w=800&auto=format&fit=crop'
   },
   {
