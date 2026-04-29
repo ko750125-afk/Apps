@@ -13,15 +13,26 @@ interface AppCardProps {
 
 export default function AppCard({ app, index }: AppCardProps) {
   const [isLoaded, setIsLoaded] = React.useState(false);
+  const [hasError, setHasError] = React.useState(false);
   
-  // Use screenshot service if URL exists but no image is provided, or as a fallback
-  const displayImage = app.image || (app.url ? `https://screenshot.vercel.app/${app.url}` : null);
+  // Use WordPress mshots service as it is more stable than screenshot.vercel.app
+  const getScreenshotUrl = (url: string) => `https://s0.wp.com/mshots/v1/${encodeURIComponent(url.startsWith('http') ? url : `https://${url}`)}?w=800`;
+
+  let displayImage = app.image;
+  
+  // If the hardcoded image is from the failing vercel service, swap it
+  if (displayImage && displayImage.includes('screenshot.vercel.app')) {
+    const urlPart = displayImage.split('screenshot.vercel.app/')[1];
+    if (urlPart) displayImage = getScreenshotUrl(urlPart);
+  } else if (!displayImage && app.url) {
+    displayImage = getScreenshotUrl(app.url);
+  }
 
   const content = (
     <div className="relative h-full flex flex-col p-6">
       {/* App Image Section */}
       <div className="relative aspect-[16/10] mb-6 rounded-[24px] overflow-hidden bg-[#f0f0f3] shadow-[inset_4px_4px_8px_#d1d1d6,inset_-4px_-4px_8px_#ffffff] border border-white/20 group/img">
-        {displayImage ? (
+        {displayImage && !hasError ? (
           <>
             {/* Shimmer Effect while loading */}
             {!isLoaded && (
@@ -34,6 +45,7 @@ export default function AppCard({ app, index }: AppCardProps) {
               animate={{ opacity: isLoaded ? 0.9 : 0 }}
               transition={{ duration: 0.5 }}
               onLoad={() => setIsLoaded(true)}
+              onError={() => setHasError(true)}
               className={cn(
                 "w-full h-full object-cover mix-blend-multiply transition-all duration-700 group-hover:scale-105",
                 isLoaded ? "group-hover:opacity-100" : "opacity-0"

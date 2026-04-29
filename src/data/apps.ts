@@ -33,7 +33,7 @@ export const apps: AppData[] = [
     date: 'Apr 1',
     featured: true,
     description: '기능 개선 및 UI/UX가 고도화된 워크플로우 관리 허브',
-    image: 'https://screenshot.vercel.app/builder-workflow-hub-final-v2.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/builder-workflow-hub-final-v2.vercel.app?w=800'
   },
   {
     id: 'study-archive',
@@ -44,7 +44,7 @@ export const apps: AppData[] = [
     date: 'Mar 26',
     featured: true,
     description: '개인 스터디 기록 및 아카이빙 플랫폼',
-    image: 'https://screenshot.vercel.app/ko-study-archive.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/ko-study-archive.vercel.app?w=800'
   },
   {
     id: '14_studydev',
@@ -77,7 +77,7 @@ export const apps: AppData[] = [
     date: 'Apr 25',
     featured: false,
     description: 'Supabase를 연동한 노션 클론 코딩 프로젝트',
-    image: 'https://screenshot.vercel.app/notion-clone-amber-seven.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/notion-clone-amber-seven.vercel.app?w=800'
   },
   {
     id: 'smart-qr',
@@ -87,7 +87,7 @@ export const apps: AppData[] = [
     category: 'Utility & Tools',
     date: 'Apr 22',
     featured: false,
-    image: 'https://screenshot.vercel.app/smart-qr-alpha.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/smart-qr-alpha.vercel.app?w=800'
   },
   {
     id: 'qrmaker',
@@ -108,7 +108,7 @@ export const apps: AppData[] = [
     date: '6h ago',
     featured: false,
     description: 'PDF 추출 및 병합 유틸리티',
-    image: 'https://screenshot.vercel.app/grab-pdf.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/grab-pdf.vercel.app?w=800'
   },
   {
     id: 'smart-neon-calculator',
@@ -118,7 +118,7 @@ export const apps: AppData[] = [
     category: 'Utility & Tools',
     date: 'Apr 22',
     featured: false,
-    image: 'https://screenshot.vercel.app/smart-neon-calculator.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/smart-neon-calculator.vercel.app?w=800'
   },
   {
     id: 'memo',
@@ -129,7 +129,7 @@ export const apps: AppData[] = [
     date: 'Apr 21',
     featured: false,
     description: '달력, 음력 토글이 포함된 메모장 앱',
-    image: 'https://screenshot.vercel.app/memo-pi-ochre.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/memo-pi-ochre.vercel.app?w=800'
   },
   {
     id: 'courier-tracker',
@@ -140,7 +140,7 @@ export const apps: AppData[] = [
     date: 'Apr 14',
     featured: false,
     description: '실시간 데이터 동기화 택배 조회기',
-    image: 'https://screenshot.vercel.app/courier-tracker-app.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/courier-tracker-app.vercel.app?w=800'
   },
   {
     id: 'global-time-schedule',
@@ -150,7 +150,7 @@ export const apps: AppData[] = [
     category: 'Utility & Tools',
     date: 'Apr 11',
     featured: false,
-    image: 'https://screenshot.vercel.app/global-time-schedule.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/global-time-schedule.vercel.app?w=800'
   },
   {
     id: 'gift_fund',
@@ -160,7 +160,7 @@ export const apps: AppData[] = [
     category: 'Finance',
     date: 'Apr 6',
     featured: false,
-    image: 'https://screenshot.vercel.app/giftfund.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/giftfund.vercel.app?w=800'
   },
   {
     id: 'sunbi-go',
@@ -170,7 +170,7 @@ export const apps: AppData[] = [
     category: 'Games & Edu',
     date: 'Apr 1',
     featured: false,
-    image: 'https://screenshot.vercel.app/sunbi-go.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/sunbi-go.vercel.app?w=800'
   },
   {
     id: 'study-archive-j582',
@@ -180,7 +180,7 @@ export const apps: AppData[] = [
     category: 'Others',
     date: 'Apr 1',
     featured: false,
-    image: 'https://screenshot.vercel.app/study-archive-j582.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/study-archive-j582.vercel.app?w=800'
   },
   {
     id: 'cyber-mole',
@@ -190,7 +190,7 @@ export const apps: AppData[] = [
     category: 'Games & Edu',
     date: 'Mar 18',
     featured: false,
-    image: 'https://screenshot.vercel.app/cyber-mole.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/cyber-mole.vercel.app?w=800'
   },
   {
     id: 'math-apple',
@@ -210,7 +210,7 @@ export const apps: AppData[] = [
     category: 'Others',
     date: 'Mar 31',
     featured: false,
-    image: 'https://screenshot.vercel.app/mbti-test-kos.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/mbti-test-kos.vercel.app?w=800'
   },
   {
     id: 'mobile-wedding-invitation',
@@ -220,7 +220,7 @@ export const apps: AppData[] = [
     category: 'Others',
     date: 'Apr 22',
     featured: false,
-    image: 'https://screenshot.vercel.app/mobile-wedding-invitation-virid.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/mobile-wedding-invitation-virid.vercel.app?w=800'
   },
   {
     id: 'my-first-idea',
@@ -230,7 +230,7 @@ export const apps: AppData[] = [
     category: 'Others',
     date: 'Mar 30',
     featured: false,
-    image: 'https://screenshot.vercel.app/my-first-idea-kappa.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/my-first-idea-kappa.vercel.app?w=800'
   },
   {
     id: 'voicecam-memo',
@@ -240,7 +240,7 @@ export const apps: AppData[] = [
     category: 'AI & Smart',
     date: 'Mar 18',
     featured: false,
-    image: 'https://screenshot.vercel.app/voicecam-memo.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/voicecam-memo.vercel.app?w=800'
   },
   {
     id: 'pay-cycle-app',
@@ -250,7 +250,7 @@ export const apps: AppData[] = [
     category: 'Finance',
     date: 'Mar 22',
     featured: false,
-    image: 'https://screenshot.vercel.app/pay-cycle-app.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/pay-cycle-app.vercel.app?w=800'
   },
   {
     id: 'ai-build-coach',
@@ -260,7 +260,7 @@ export const apps: AppData[] = [
     category: 'AI & Smart',
     date: 'Mar 18',
     featured: false,
-    image: 'https://screenshot.vercel.app/ai-build-coach.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/ai-build-coach.vercel.app?w=800'
   },
   {
     id: 'ai-build-architect',
@@ -270,7 +270,7 @@ export const apps: AppData[] = [
     category: 'AI & Smart',
     date: 'Mar 17',
     featured: false,
-    image: 'https://screenshot.vercel.app/ai-build-architect.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/ai-build-architect.vercel.app?w=800'
   },
   {
     id: 'kids-math-monster',
@@ -280,7 +280,7 @@ export const apps: AppData[] = [
     category: 'Games & Edu',
     date: 'Mar 11',
     featured: false,
-    image: 'https://screenshot.vercel.app/kids-math-monster.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/kids-math-monster.vercel.app?w=800'
   },
   {
     id: 'reflex-vocab',
@@ -290,7 +290,7 @@ export const apps: AppData[] = [
     category: 'Games & Edu',
     date: 'Feb 28',
     featured: false,
-    image: 'https://screenshot.vercel.app/reflex-vocab.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/reflex-vocab.vercel.app?w=800'
   },
   {
     id: 'reflex-vocab-en',
@@ -300,7 +300,7 @@ export const apps: AppData[] = [
     category: 'Games & Edu',
     date: 'Feb 28',
     featured: false,
-    image: 'https://screenshot.vercel.app/reflex-vocab.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/reflex-vocab.vercel.app?w=800'
   },
   {
     id: 'kanpyeon-budget',
@@ -310,7 +310,7 @@ export const apps: AppData[] = [
     category: 'Finance',
     date: 'Feb 23',
     featured: false,
-    image: 'https://screenshot.vercel.app/kanpyeon-budget.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/kanpyeon-budget.vercel.app?w=800'
   },
   {
     id: 'past-life-analyzer',
@@ -320,7 +320,7 @@ export const apps: AppData[] = [
     category: 'AI & Smart',
     date: 'Feb 16',
     featured: false,
-    image: 'https://screenshot.vercel.app/past-life-analyzer.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/past-life-analyzer.vercel.app?w=800'
   },
   {
     id: 'frontend',
@@ -330,7 +330,7 @@ export const apps: AppData[] = [
     category: 'Others',
     date: '18h ago',
     featured: false,
-    image: 'https://screenshot.vercel.app/frontend-three-pink-68.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/frontend-three-pink-68.vercel.app?w=800'
   },
   {
     id: 'backend',
@@ -340,7 +340,7 @@ export const apps: AppData[] = [
     category: 'Others',
     date: '18h ago',
     featured: false,
-    image: 'https://screenshot.vercel.app/backend-theta-blond-16.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/backend-theta-blond-16.vercel.app?w=800'
   },
   {
     id: '100-websites',
@@ -350,7 +350,7 @@ export const apps: AppData[] = [
     category: 'Others',
     date: 'Mar 31',
     featured: false,
-    image: 'https://screenshot.vercel.app/100-websites-iota.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/100-websites-iota.vercel.app?w=800'
   },
   {
     id: 'apps-hub',
@@ -360,7 +360,7 @@ export const apps: AppData[] = [
     category: 'Others',
     date: 'Mar 11',
     featured: false,
-    image: 'https://screenshot.vercel.app/kos-apps-hub.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/kos-apps-hub.vercel.app?w=800'
   },
   {
     id: 'builder-workflow-hub',
@@ -370,6 +370,6 @@ export const apps: AppData[] = [
     category: 'Productivity',
     date: 'Mar 23',
     featured: false,
-    image: 'https://screenshot.vercel.app/builder-workflow-hub.vercel.app'
+    image: 'https://s0.wp.com/mshots/v1/builder-workflow-hub.vercel.app?w=800'
   }
 ];
