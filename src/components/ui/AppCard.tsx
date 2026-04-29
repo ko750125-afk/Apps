@@ -12,19 +12,42 @@ interface AppCardProps {
 }
 
 export default function AppCard({ app, index }: AppCardProps) {
+  const [isLoaded, setIsLoaded] = React.useState(false);
+  
+  // Use screenshot service if URL exists but no image is provided, or as a fallback
+  const displayImage = app.image || (app.url ? `https://screenshot.vercel.app/${app.url}` : null);
+
   const content = (
     <div className="relative h-full flex flex-col p-6">
       {/* App Image Section */}
-      <div className="relative aspect-[16/10] mb-6 rounded-[24px] overflow-hidden bg-[#f0f0f3] shadow-[inset_4px_4px_8px_#d1d1d6,inset_-4px_-4px_8px_#ffffff] border border-white/20">
-        {app.image ? (
-          <img 
-            src={app.image} 
-            alt={app.name}
-            className="w-full h-full object-cover mix-blend-multiply opacity-90 group-hover:opacity-100 transform transition-all duration-700 group-hover:scale-105"
-          />
+      <div className="relative aspect-[16/10] mb-6 rounded-[24px] overflow-hidden bg-[#f0f0f3] shadow-[inset_4px_4px_8px_#d1d1d6,inset_-4px_-4px_8px_#ffffff] border border-white/20 group/img">
+        {displayImage ? (
+          <>
+            {/* Shimmer Effect while loading */}
+            {!isLoaded && (
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+            )}
+            <motion.img 
+              src={displayImage} 
+              alt={app.name}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: isLoaded ? 0.9 : 0 }}
+              transition={{ duration: 0.5 }}
+              onLoad={() => setIsLoaded(true)}
+              className={cn(
+                "w-full h-full object-cover mix-blend-multiply transition-all duration-700 group-hover:scale-105",
+                isLoaded ? "group-hover:opacity-100" : "opacity-0"
+              )}
+            />
+            {/* Glossy overlay */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none opacity-50" />
+          </>
         ) : (
-          <div className="w-full h-full flex items-center justify-center">
-            <span className="text-[#86868b] font-medium opacity-50">No Preview</span>
+          <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+            <div className="w-12 h-12 rounded-full bg-[#f0f0f3] shadow-[4px_4px_8px_#d1d1d6,-4px_-4px_8px_#ffffff] flex items-center justify-center">
+              <span className="text-[#86868b] text-[10px] font-bold opacity-30">APP</span>
+            </div>
+            <span className="text-[12px] text-[#86868b] font-medium opacity-40">Preparing Preview</span>
           </div>
         )}
       </div>
@@ -32,10 +55,12 @@ export default function AppCard({ app, index }: AppCardProps) {
       {/* App Info Section */}
       <div className="flex flex-col flex-grow px-2">
         <div className="flex items-start justify-between mb-3">
-          <h3 className="text-[20px] font-bold text-[#1d1d1f] tracking-tight group-hover:text-[#0066cc] transition-colors duration-300">
+          <h3 className="text-[19px] font-bold text-[#1d1d1f] tracking-tight group-hover:text-[#0066cc] transition-colors duration-300">
             {app.name}
           </h3>
-          <ExternalLink className="w-4 h-4 text-[#86868b] opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300" />
+          <div className="w-8 h-8 rounded-full bg-[#f0f0f3] shadow-[2px_2px_4px_#d1d1d6,-2px_-2px_4px_#ffffff] flex items-center justify-center opacity-0 -translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+            <ExternalLink className="w-3.5 h-3.5 text-[#0066cc]" />
+          </div>
         </div>
         
         <p className="text-[14px] leading-[1.6] text-[#86868b] line-clamp-2 mb-6 font-medium">

@@ -11,11 +11,14 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Check if config is provided and not a placeholder
+// Check if config is provided and looks valid
 const isConfigValid = 
-  !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY && 
+  typeof process.env.NEXT_PUBLIC_FIREBASE_API_KEY === 'string' && 
+  process.env.NEXT_PUBLIC_FIREBASE_API_KEY.length > 10 &&
   process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'your_api_key' &&
-  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID !== undefined;
+  process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'undefined' &&
+  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID !== undefined &&
+  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID !== 'undefined';
 
 let db: Firestore | any = null;
 let auth: Auth | any = null;
