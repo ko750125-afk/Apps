@@ -11,21 +11,22 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Check if config is provided
-const isConfigValid = !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY && process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'your_api_key';
+// Check if config is provided and not a placeholder
+const isConfigValid = 
+  !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY && 
+  process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'your_api_key' &&
+  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID !== undefined;
 
-let app;
 let db: Firestore | any = null;
 let auth: Auth | any = null;
 
-if (!isConfigValid) {
-  console.warn('Firebase configuration is missing or invalid. Please check your .env.local file.');
-} else {
+if (typeof window !== 'undefined' || isConfigValid) {
   try {
-    // Initialize Firebase
-    app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
-    db = getFirestore(app);
-    auth = getAuth(app);
+    if (isConfigValid) {
+      const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+      db = getFirestore(app);
+      auth = getAuth(app);
+    }
   } catch (error) {
     console.error('Firebase initialization error', error);
   }

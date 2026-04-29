@@ -1,26 +1,25 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 
+const inter = Inter({ subsets: ["latin"] });
+
 export const metadata: Metadata = {
-  title: "Apps Hub | Minimalist Portfolio",
-  description: "A clean, minimalist portfolio of web applications.",
+  title: "Antigravity Apps",
+  description: "A premium portfolio of web applications.",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <body className="relative min-h-screen bg-[#fbfbfd] text-[#1d1d1f] antialiased selection:bg-[#0066cc]/30 selection:text-black">
+      <body className={`${inter.className} bg-white text-[#1d1d1f] antialiased`}>
         <Header />
-        
-        {/* Main content wrapper */}
-        <div className="relative z-10 min-h-screen flex flex-col">
-          {children}
-        </div>
+        {children}
       </body>
     </html>
   );
