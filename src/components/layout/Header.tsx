@@ -29,6 +29,7 @@ export default function Header() {
   );
 
   useEffect(() => {
+    if (!auth) return;
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
     });
@@ -45,6 +46,7 @@ export default function Header() {
   }, []);
 
   const handleLogout = async () => {
+    if (!auth) return;
     try {
       await signOut(auth);
       router.push('/');
@@ -69,7 +71,7 @@ export default function Header() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
           <span className="font-semibold text-xl tracking-tight text-[#1d1d1f]">
-            Portfolio
+            RapidForge
           </span>
         </Link>
 
@@ -78,9 +80,8 @@ export default function Header() {
           <Link href="/" className="text-[13px] font-medium text-[#1d1d1f] hover:text-black transition-colors">
             Apps
           </Link>
-          <Link href="#" className="text-[13px] font-medium text-[#86868b] hover:text-[#1d1d1f] transition-colors">
-            About
-          </Link>
+          
+
           
           <div className="h-4 w-[1px] bg-black/10 mx-2" />
           
@@ -134,9 +135,6 @@ export default function Header() {
             <div className="p-6 flex flex-col space-y-6">
               <Link href="/" onClick={() => setMobileMenuOpen(false)} className="text-[#1d1d1f] font-medium">
                 Apps
-              </Link>
-              <Link href="#" onClick={() => setMobileMenuOpen(false)} className="text-[#86868b] font-medium">
-                About
               </Link>
               <div className="h-[1px] bg-black/5 w-full" />
               {user ? (

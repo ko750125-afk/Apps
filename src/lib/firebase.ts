@@ -1,4 +1,4 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
+import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getFirestore, Firestore } from "firebase/firestore";
 import { getAuth, Auth } from "firebase/auth";
 
@@ -11,28 +11,31 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Check if config is provided and looks valid
-const isConfigValid = 
-  typeof process.env.NEXT_PUBLIC_FIREBASE_API_KEY === 'string' && 
-  process.env.NEXT_PUBLIC_FIREBASE_API_KEY.length > 10 &&
-  process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'your_api_key' &&
-  process.env.NEXT_PUBLIC_FIREBASE_API_KEY !== 'undefined' &&
-  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID !== undefined &&
-  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID !== 'undefined';
+let db: Firestore | null = null;
+let auth: Auth | null = null;
+let app: FirebaseApp | null = null;
 
-let db: Firestore | any = null;
-let auth: Auth | any = null;
+// Only initialize if we have the minimum required config
+const hasConfig = !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY && !!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 
-if (typeof window !== 'undefined' || isConfigValid) {
+if (typeof window !== 'undefined' || hasConfig) {
   try {
-    if (isConfigValid) {
-      const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    if (getApps().length > 0) {
+      app = getApp();
+    } else if (hasConfig) {
+      app = initializeApp(firebaseConfig);
+      console.log("🚀 Firebase Initialized with Project ID:", firebaseConfig.projectId);
+    }
+
+    if (app) {
       db = getFirestore(app);
       auth = getAuth(app);
     }
   } catch (error) {
-    console.error('Firebase initialization error', error);
+    console.error('❌ Firebase initialization error:', error);
   }
+} else {
+  console.warn("⚠️ Firebase config is missing. Authentication will be disabled.");
 }
 
-export { db, auth };
+export { db, auth, app };
