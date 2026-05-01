@@ -14,12 +14,6 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // 2. Already logged in → redirect away from login page
-  if (pathname === '/admin/login' && token?.value) {
-    const adminUrl = new URL('/admin', request.url);
-    return NextResponse.redirect(adminUrl);
-  }
-
   return NextResponse.next();
 }
 

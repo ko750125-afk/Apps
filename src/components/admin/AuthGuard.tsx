@@ -36,8 +36,10 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
       } else {
         console.warn('⚠️ AuthGuard: No active session found.');
         setAuthenticated(false);
-        // Only redirect if we've checked at least once and we're not on login page
-        router.push('/admin/login');
+        // Clear stale server cookie to prevent /admin <-> /admin/login redirect loops.
+        void fetch('/api/auth/session', { method: 'DELETE' }).finally(() => {
+          router.replace('/admin/login');
+        });
       }
       setLoading(false);
     }, (err) => {
