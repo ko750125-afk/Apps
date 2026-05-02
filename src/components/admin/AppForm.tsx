@@ -14,10 +14,12 @@ export default function AppForm({ initialData, isEditing = false }: AppFormProps
   const {
     formData,
     loading,
+    isAnalyzing,
     setFormData,
     handleChange,
     handleMemoChange,
     handleSubmit,
+    analyzeGitHubRepo,
   } = useAppForm({ initialData, isEditing });
 
   return (
@@ -28,7 +30,9 @@ export default function AppForm({ initialData, isEditing = false }: AppFormProps
         handleMemoChange={handleMemoChange}
         setFormData={setFormData}
         loading={loading}
+        isAnalyzing={isAnalyzing}
         isEditing={isEditing}
+        analyzeGitHubRepo={analyzeGitHubRepo}
       />
 
       <AppFormActions

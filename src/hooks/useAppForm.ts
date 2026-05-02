@@ -29,6 +29,7 @@ const createDefaultFormData = (): AppData => ({
 export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [formData, setFormData] = useState<AppData>(initialData || createDefaultFormData());
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -79,12 +80,76 @@ export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) 
     }
   };
 
+  const analyzeGitHubRepo = async () => {
+    if (!formData.repo) {
+      alert('GitHub 리포지토리 주소(owner/repo)를 먼저 입력해주세요.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // 1. Extract owner/repo
+      const cleanRepo = formData.repo.replace('https://github.com/', '').replace(/\/$/, '');
+      
+      // 2. Try to fetch package.json (main or master)
+      let packageJson = null;
+      for (const branch of ['main', 'master']) {
+        try {
+          const res = await fetch(`https://raw.githubusercontent.com/${cleanRepo}/${branch}/package.json`);
+          if (res.ok) {
+            packageJson = await res.json();
+            break;
+          }
+        } catch (e) {
+          console.error(`Failed to fetch from ${branch} branch`, e);
+        }
+      }
+
+      if (!packageJson) {
+        throw new Error('package.json을 찾을 수 없습니다. 주소나 브랜치명을 확인해주세요.');
+      }
+
+      // 3. Analyze dependencies
+      const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
+      const stack: string[] = [];
+
+      if (deps['next']) stack.push('Next.js');
+      if (deps['react']) stack.push('React');
+      if (deps['tailwindcss'] || deps['@tailwindcss/postcss']) stack.push('Tailwind CSS');
+      if (deps['firebase']) stack.push('Firebase');
+      if (deps['@supabase/supabase-js']) stack.push('Supabase');
+      if (deps['typescript']) stack.push('TypeScript');
+      if (deps['framer-motion']) stack.push('Framer Motion');
+      if (deps['lucide-react']) stack.push('Lucide React');
+      if (deps['prisma']) stack.push('Prisma');
+      if (deps['drizzle-orm']) stack.push('Drizzle ORM');
+      if (deps['shadcn-ui'] || deps['@radix-ui/react-primitive']) stack.push('Shadcn UI');
+
+      // 4. Update Memo
+      const techStackMarkdown = `\n\n### 기술 스택\n- **Frontend**: ${stack.filter(s => ['Next.js', 'React', 'Tailwind CSS', 'TypeScript', 'Framer Motion', 'Lucide React', 'Shadcn UI'].includes(s)).join(', ')}\n- **Backend**: ${stack.filter(s => ['Firebase', 'Supabase', 'Prisma', 'Drizzle ORM'].includes(s)).join(', ') || 'Client-side only'}\n- **Deployment**: Vercel (Auto-detected)`;
+      
+      setFormData(prev => ({
+        ...prev,
+        memo: (prev.memo || '') + techStackMarkdown
+      }));
+
+      alert('기술 스택 분석이 완료되었습니다!');
+    } catch (error: any) {
+      console.error('Analysis error:', error);
+      alert(`분석 중 오류가 발생했습니다: ${error.message}`);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   return {
     formData,
     loading,
+    isAnalyzing,
     setFormData,
     handleChange,
     handleMemoChange,
     handleSubmit,
+    analyzeGitHubRepo,
   };
 }

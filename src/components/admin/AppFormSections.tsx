@@ -11,10 +11,12 @@ interface BaseSectionProps {
   formData: AppData;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
   setFormData: React.Dispatch<React.SetStateAction<AppData>>;
+  analyzeGitHubRepo?: () => Promise<void>;
+  isAnalyzing?: boolean;
 }
 
 /* ─── 01. Essential Info Section (Combined Identity + Assets) ─── */
-const EssentialInfoSection = ({ formData, handleChange, setFormData }: BaseSectionProps) => (
+const EssentialInfoSection = ({ formData, handleChange, setFormData, analyzeGitHubRepo, isAnalyzing }: BaseSectionProps) => (
   <div className="bg-neutral-900/20 backdrop-blur-3xl border border-neutral-800/50 rounded-[3rem] p-8 md:p-12 space-y-12 shadow-2xl">
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
@@ -103,18 +105,38 @@ const EssentialInfoSection = ({ formData, handleChange, setFormData }: BaseSecti
               />
             </div>
           </FormField>
-          <FormField label="스크린샷 URL (Image)">
-            <div className="relative group">
-              <ImageIcon className="absolute left-5 top-6 w-4 h-4 text-neutral-600 group-focus-within:text-accent transition-colors" />
-              <textarea 
-                name="image" 
-                value={formData.image || ''} 
-                onChange={handleChange} 
-                className={cn(inputClassName, "h-32 resize-none bg-neutral-950/60 border-neutral-800 pl-14 py-5 rounded-2xl text-xs")} 
-                placeholder="스크린샷 이미지 주소를 입력하세요" 
-              />
+          <FormField label="GitHub 리포지토리 (Repo)">
+            <div className="flex gap-3">
+              <div className="relative group flex-1">
+                <LinkIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-600 group-focus-within:text-accent transition-colors" />
+                <input 
+                  type="text" 
+                  name="repo" 
+                  value={formData.repo || ''} 
+                  onChange={handleChange} 
+                  className={cn(inputClassName, "bg-neutral-950/60 border-neutral-800 pl-14 h-14 rounded-2xl")} 
+                  placeholder="owner/repo" 
+                />
+              </div>
+              <button
+                type="button"
+                onClick={analyzeGitHubRepo}
+                disabled={isAnalyzing || !formData.repo}
+                className={cn(
+                  "px-6 bg-neutral-800 hover:bg-neutral-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap border border-neutral-700 disabled:opacity-50",
+                  isAnalyzing && "cursor-wait"
+                )}
+              >
+                {isAnalyzing ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
+                ) : (
+                  <Sparkles className="w-3.5 h-3.5 text-accent" />
+                )}
+                {isAnalyzing ? '분석 중...' : '분석'}
+              </button>
             </div>
           </FormField>
+          <FormField label="스크린샷 URL (Image)">
         </div>
         
         <div className="relative aspect-video rounded-[2.5rem] overflow-hidden border-2 border-neutral-800/50 bg-neutral-950 shadow-2xl group">
@@ -168,7 +190,7 @@ const DetailedDescriptionSection = ({ formData, handleMemoChange }: Pick<BaseSec
 );
 
 /* ─── Main Form Flow ─── */
-export const AppFormMain = (props: BaseSectionProps & { handleMemoChange: (val: string) => void; loading: boolean; isEditing: boolean }) => (
+export const AppFormMain = (props: BaseSectionProps & { handleMemoChange: (val: string) => void; loading: boolean; isAnalyzing: boolean; isEditing: boolean }) => (
   <div className="max-w-5xl mx-auto space-y-10 pb-40 px-6">
     <EssentialInfoSection {...props} />
     <DetailedDescriptionSection {...props} />
