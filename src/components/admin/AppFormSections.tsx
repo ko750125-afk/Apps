@@ -137,6 +137,18 @@ const EssentialInfoSection = ({ formData, handleChange, setFormData, analyzeGitH
             </div>
           </FormField>
           <FormField label="스크린샷 URL (Image)">
+            <div className="relative group">
+              <ImageIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-600 group-focus-within:text-accent transition-colors" />
+              <input 
+                type="text" 
+                name="image" 
+                value={formData.image || ''} 
+                onChange={handleChange} 
+                className={cn(inputClassName, "bg-neutral-950/60 border-neutral-800 pl-14 h-14 rounded-2xl")} 
+                placeholder="https://..." 
+              />
+            </div>
+          </FormField>
         </div>
         
         <div className="relative aspect-video rounded-[2.5rem] overflow-hidden border-2 border-neutral-800/50 bg-neutral-950 shadow-2xl group">
@@ -162,11 +174,11 @@ const DetailedDescriptionSection = ({ formData, handleMemoChange }: Pick<BaseSec
   <div className="bg-neutral-900/20 backdrop-blur-3xl border border-neutral-800/50 rounded-[3rem] p-8 md:p-12 space-y-10 shadow-2xl">
     <div className="flex items-center gap-4">
       <div className="w-14 h-14 bg-amber-500/10 rounded-[1.5rem] flex items-center justify-center border border-amber-500/20 shadow-inner">
-        <Info className="w-7 h-7 text-amber-500" />
+        <Sparkles className="w-7 h-7 text-amber-500" />
       </div>
       <div>
-        <h3 className="text-3xl font-black text-white tracking-tight">상세 메모</h3>
-        <p className="text-sm text-neutral-500 font-medium tracking-wide">마크다운 없이도 좋습니다. 줄바꿈만으로 내용을 정리하세요.</p>
+        <h3 className="text-3xl font-black text-white tracking-tight">Technical Details</h3>
+        <p className="text-sm text-neutral-500 font-medium tracking-wide">앱의 기술적 명세와 개발 메모를 관리하세요. (Markdown 지원)</p>
       </div>
     </div>
 

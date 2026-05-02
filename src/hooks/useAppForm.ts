@@ -126,7 +126,7 @@ export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) 
       if (deps['shadcn-ui'] || deps['@radix-ui/react-primitive']) stack.push('Shadcn UI');
 
       // 4. Update Memo
-      const techStackMarkdown = `\n\n### 기술 스택\n- **Frontend**: ${stack.filter(s => ['Next.js', 'React', 'Tailwind CSS', 'TypeScript', 'Framer Motion', 'Lucide React', 'Shadcn UI'].includes(s)).join(', ')}\n- **Backend**: ${stack.filter(s => ['Firebase', 'Supabase', 'Prisma', 'Drizzle ORM'].includes(s)).join(', ') || 'Client-side only'}\n- **Deployment**: Vercel (Auto-detected)`;
+      const techStackMarkdown = `\n\n### Technical Details\n- **Frontend**: ${stack.filter(s => ['Next.js', 'React', 'Tailwind CSS', 'TypeScript', 'Framer Motion', 'Lucide React', 'Shadcn UI'].includes(s)).join(', ')}\n- **Backend**: ${stack.filter(s => ['Firebase', 'Supabase', 'Prisma', 'Drizzle ORM'].includes(s)).join(', ') || 'Client-side only'}\n- **Deployment**: Vercel (Auto-detected)`;
       
       setFormData(prev => ({
         ...prev,
