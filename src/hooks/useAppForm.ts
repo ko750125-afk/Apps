@@ -1,42 +1,39 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { doc, collection, addDoc, updateDoc } from 'firebase/firestore';
+import { doc, collection, addDoc, updateDoc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { AppData, Category } from '@/data/apps';
+import { revalidateAppCaches } from '@/lib/revalidate';
+
+const COLLECTION_NAME = '18_apps_list';
 
 interface UseAppFormProps {
   initialData?: AppData;
   isEditing?: boolean;
 }
 
+const createDefaultFormData = (): AppData => ({
+  id: '',
+  name: '',
+  url: '',
+  repo: '',
+  category: 'Business Website' as Category,
+  date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+  featured: false,
+  description: '',
+  image: '',
+  status: 'Exhibit',
+  memo: '',
+});
+
 export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [systemLogs, setSystemLogs] = useState<string[]>(['READY_FOR_INPUT']);
-
-  const defaultFormData: AppData = {
-    id: '',
-    name: '',
-    url: '',
-    repo: '',
-    category: 'Business Website' as Category,
-    date: '',
-    featured: false,
-    description: '',
-    image: '',
-    status: 'Exhibit',
-    memo: '',
-  };
-
-  const [formData, setFormData] = useState<AppData>(initialData || defaultFormData);
-
-  const addLog = (msg: string) => {
-    setSystemLogs(prev => [...prev.slice(-4), msg]);
-  };
+  const [formData, setFormData] = useState<AppData>(initialData || createDefaultFormData());
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
-    
+
     if (type === 'checkbox') {
       const checked = (e.target as HTMLInputElement).checked;
       setFormData(prev => ({ ...prev, [name]: checked }));
@@ -46,85 +43,37 @@ export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) 
   };
 
   const handleMemoChange = (value?: string) => {
-    setFormData(prev => ({
-      ...prev,
-      memo: value || ''
-    }));
-  };
-
-  const fetchAppInfo = async () => {
-    if (!formData.url) {
-      addLog('ERR: URL_NOT_SPECIFIED');
-      return;
-    }
-
-    setLoading(true);
-    addLog(`SCANNING_TARGET: ${formData.url}`);
-    try {
-      const url = formData.url.startsWith('http') ? formData.url : `https://${formData.url}`;
-      const apiUrl = `https://api.microlink.io?url=${encodeURIComponent(url)}&screenshot=true&meta=true`;
-      
-      const response = await fetch(apiUrl);
-      const data = await response.json();
-
-      if (data.status === 'success') {
-        const { title, description, image, screenshot } = data.data;
-        addLog('METADATA_ACQUIRED_INJECTING_FIELDS');
-        
-        setFormData(prev => ({
-          ...prev,
-          name: prev.name || title?.toUpperCase() || '',
-          description: prev.description || description || '',
-          image: screenshot?.url || image?.url || prev.image || '',
-        }));
-      } else {
-        throw new Error('Failed to fetch metadata');
-      }
-    } catch (error) {
-      console.error('Error fetching app info:', error);
-      addLog('ERR: SCAN_FAILED_FALLBACK_TO_MANUAL');
-    } finally {
-      setLoading(false);
-    }
+    setFormData(prev => ({ ...prev, memo: value || '' }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!db) return;
+
     setLoading(true);
-    addLog('COMMENCING_DATA_TRANSMISSION...');
 
     try {
-      const finalData = {
-        ...formData,
-        date: formData.date || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+      const { id, ...rest } = formData;
+      const submitData = {
+        ...rest,
+        date: isEditing ? (initialData?.date || formData.date) : formData.date,
       };
 
-      // Remove ID for submission if it's new
-      const { id: _unusedId, ...submitData } = finalData;
-      void _unusedId; // Explicitly mark as unused for linter if needed
-
-      if (!db) throw new Error('Firebase DB not initialized');
-
       if (isEditing && initialData?.id) {
-        addLog(`UPDATING_NODE_ID: ${initialData.id}`);
-        const appRef = doc(db, '18_apps_list', initialData.id);
-        await updateDoc(appRef, submitData);
-        addLog('SYNC_SUCCESSFUL');
+        await updateDoc(doc(db, COLLECTION_NAME, initialData.id), submitData);
+      } else if (id) {
+        await setDoc(doc(db, COLLECTION_NAME, id), submitData);
       } else {
-        addLog('INITIALIZING_NEW_NODE_ENTRY...');
-        const appsRef = collection(db, '18_apps_list');
-        await addDoc(appsRef, submitData);
-        addLog('ENTRY_CREATED_SUCCESSFULLY');
+        await addDoc(collection(db, COLLECTION_NAME), submitData);
       }
 
-      setTimeout(() => {
-        router.push('/admin');
-        router.refresh();
-      }, 800);
+      await revalidateAppCaches(id || undefined);
+
+      router.push('/admin');
+      router.refresh();
     } catch (error) {
       console.error('Error saving app:', error);
-      addLog('TRANSMISSION_ERROR_ABORTING');
-      alert('Failed to save app. Check console for details.');
+      alert('저장에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setLoading(false);
     }
@@ -133,12 +82,9 @@ export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) 
   return {
     formData,
     loading,
-    systemLogs,
     setFormData,
     handleChange,
     handleMemoChange,
-    fetchAppInfo,
     handleSubmit,
-    addLog
   };
 }

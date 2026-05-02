@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { useRouter, usePathname } from 'next/navigation';
@@ -12,52 +12,42 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const checkCount = useRef(0);
 
   useEffect(() => {
-    const currentAuth = auth;
-    if (!currentAuth) {
+    if (!auth) {
       console.error('❌ AuthGuard: Firebase Auth is not initialized.');
-      Promise.resolve().then(() => {
-        setError('Authentication system failed to initialize.');
-        setLoading(false);
-      });
+      setError('Authentication system failed to initialize.');
+      setLoading(false);
       return;
     }
 
     console.log(`🔐 AuthGuard: Checking auth state for ${pathname}...`);
 
-    const unsubscribe = onAuthStateChanged(currentAuth, (user) => {
-      checkCount.current++;
-      if (user) {
-        console.log('✅ AuthGuard: User authenticated:', user.email);
-        setAuthenticated(true);
-        setError(null);
-      } else {
-        console.warn('⚠️ AuthGuard: No active session found.');
-        setAuthenticated(false);
-        // Clear stale server cookie to prevent /admin <-> /admin/login redirect loops.
-        void fetch('/api/auth/session', { method: 'DELETE' }).finally(() => {
-          router.replace('/admin/login');
-        });
-      }
-      setLoading(false);
-    }, (err) => {
-      console.error('❌ AuthGuard: onAuthStateChanged error:', err);
-      setError(`Auth system error: ${err.message}`);
-      setLoading(false);
-    });
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      (user) => {
+        if (user) {
+          console.log('✅ AuthGuard: User authenticated:', user.email);
+          setAuthenticated(true);
+          setError(null);
+        } else {
+          console.warn('⚠️ AuthGuard: No active session found.');
+          setAuthenticated(false);
+          // Clear stale server cookie to prevent redirect loops
+          void fetch('/api/auth/session', { method: 'DELETE' }).finally(() => {
+            router.replace('/admin/login');
+          });
+        }
+        setLoading(false);
+      },
+      (err) => {
+        console.error('❌ AuthGuard: onAuthStateChanged error:', err);
+        setError(`Auth system error: ${err.message}`);
+        setLoading(false);
+      },
+    );
 
-    // 3. Safety timeout
-    const timeout = setTimeout(() => {
-      // If still loading after 10s, it's likely a network/config issue
-      // We don't force a state change here, but we could show a warning in UI
-    }, 10000);
-
-    return () => {
-      unsubscribe();
-      clearTimeout(timeout);
-    };
+    return () => unsubscribe();
   }, [router, pathname]);
 
   if (loading) {

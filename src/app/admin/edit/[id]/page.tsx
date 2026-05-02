@@ -39,35 +39,39 @@ export default function EditAppPage() {
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center">
-        <Loader2 className="w-6 h-6 text-neutral-500 animate-spin mb-3" />
-        <p className="text-sm text-neutral-500">Loading app data...</p>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4">
+        <Loader2 className="w-8 h-8 text-accent animate-spin" />
+        <p className="text-sm font-medium text-neutral-500">데이터를 불러오는 중입니다...</p>
       </div>
     );
   }
 
   if (!app) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center">
-        <AlertCircle className="w-8 h-8 text-red-400 mb-3" />
-        <h2 className="text-lg font-semibold text-neutral-200 mb-1">App Not Found</h2>
-        <p className="text-sm text-neutral-500">The app with ID &quot;{id}&quot; could not be found.</p>
+      <div className="min-h-[60vh] flex flex-col items-center justify-center text-center p-8">
+        <div className="w-16 h-16 bg-rose-500/10 rounded-2xl flex items-center justify-center mb-6">
+          <AlertCircle className="w-8 h-8 text-rose-500" />
+        </div>
+        <h2 className="text-xl font-bold text-white mb-2">프로젝트를 찾을 수 없습니다</h2>
+        <p className="text-sm text-neutral-500">요청하신 ID(&quot;{id}&quot;)의 앱 정보를 가져올 수 없습니다.</p>
       </div>
     );
   }
 
   return (
     <div>
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-1">
-          <div className="p-2 bg-accent/10 rounded-lg">
-            <Pencil className="w-5 h-5 text-accent" />
+      <div className="mb-12">
+        <div className="flex items-center gap-4 mb-3">
+          <div className="p-3 bg-accent/10 rounded-2xl shadow-inner shadow-accent/5">
+            <Pencil className="w-6 h-6 text-accent" />
           </div>
-          <h1 className="text-xl font-bold text-neutral-50">Edit App</h1>
+          <div className="space-y-1">
+            <h1 className="text-3xl font-black text-white tracking-tight">프로젝트 정보 수정</h1>
+            <p className="text-sm font-medium text-neutral-500">
+              <span className="text-accent font-bold">&quot;{app.name}&quot;</span> 프로젝트의 세부 사항을 업데이트합니다.
+            </p>
+          </div>
         </div>
-        <p className="text-sm text-neutral-500 ml-12">
-          Editing <span className="text-neutral-300 font-medium">{app.name}</span>
-        </p>
       </div>
       <AppForm initialData={app} isEditing />
     </div>

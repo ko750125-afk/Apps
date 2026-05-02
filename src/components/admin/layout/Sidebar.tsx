@@ -16,9 +16,8 @@ import {
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/new', label: 'New App', icon: PlusCircle },
-  { href: '/admin/migrate', label: 'Migration', icon: ArrowRightLeft },
+  { href: '/admin', label: '대시보드', icon: LayoutDashboard },
+  { href: '/admin/new', label: '새 프로젝트', icon: PlusCircle },
 ];
 
 export default function Sidebar({ isCollapsed, onToggle }: { isCollapsed: boolean, onToggle: () => void }) {
@@ -28,33 +27,33 @@ export default function Sidebar({ isCollapsed, onToggle }: { isCollapsed: boolea
     <aside 
       className={cn(
         "fixed left-0 top-0 h-screen bg-neutral-950 border-r border-neutral-900 transition-all duration-300 z-50 flex flex-col",
-        isCollapsed ? "w-16" : "w-64"
+        isCollapsed ? "w-20" : "w-64"
       )}
     >
       {/* Brand */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-neutral-900/50">
+      <div className="h-20 flex items-center justify-between px-6 border-b border-neutral-900/50">
         {!isCollapsed && (
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center shadow-lg shadow-accent/20">
               <Monitor className="w-5 h-5 text-white" />
             </div>
-            <span className="font-bold text-neutral-50 tracking-tight group-hover:text-accent transition-colors">RapidForge</span>
+            <span className="font-black text-white tracking-tighter text-lg group-hover:text-accent transition-colors">RapidForge</span>
           </Link>
         )}
         {isCollapsed && (
-          <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center mx-auto">
+          <div className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center mx-auto shadow-lg shadow-accent/20">
             <Monitor className="w-5 h-5 text-white" />
           </div>
         )}
       </div>
 
       {/* Navigation */}
-      <div className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
+      <div className="flex-1 py-8 px-4 space-y-1 overflow-y-auto scrollbar-hide">
         <p className={cn(
-          "text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-4 px-3 transition-opacity",
+          "text-[10px] font-black text-neutral-600 uppercase tracking-[0.2em] mb-4 px-3 transition-opacity",
           isCollapsed ? "opacity-0" : "opacity-100"
         )}>
-          Management
+          관리 메뉴
         </p>
         
         {NAV_ITEMS.map((item) => {
@@ -68,46 +67,46 @@ export default function Sidebar({ isCollapsed, onToggle }: { isCollapsed: boolea
               key={item.href}
               href={item.href}
               className={cn(
-                "group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 relative",
+                "group flex items-center gap-3 px-3 py-3 rounded-2xl text-sm font-bold transition-all duration-300 relative",
                 isActive 
                   ? "bg-accent/10 text-accent" 
-                  : "text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900"
+                  : "text-neutral-500 hover:text-neutral-200 hover:bg-neutral-900/50"
               )}
               title={isCollapsed ? item.label : undefined}
             >
               <Icon className={cn("w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110", isActive && "text-accent")} />
               {!isCollapsed && <span>{item.label}</span>}
               {isActive && !isCollapsed && (
-                <div className="absolute right-2 w-1.5 h-1.5 rounded-full bg-accent shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+                <div className="absolute right-3 w-1.5 h-1.5 rounded-full bg-accent shadow-[0_0_10px_rgba(59,130,246,0.8)]" />
               )}
             </Link>
           );
         })}
 
-        <div className="pt-8">
+        <div className="pt-10">
           <p className={cn(
-            "text-[10px] font-bold text-neutral-500 uppercase tracking-widest mb-4 px-3 transition-opacity",
+            "text-[10px] font-black text-neutral-600 uppercase tracking-[0.2em] mb-4 px-3 transition-opacity",
             isCollapsed ? "opacity-0" : "opacity-100"
           )}>
-            Public
+            공개 페이지
           </p>
           <Link
             href="/"
             target="_blank"
-            className="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900 transition-all duration-200"
-            title={isCollapsed ? "Visit Website" : undefined}
+            className="group flex items-center gap-3 px-3 py-3 rounded-2xl text-sm font-bold text-neutral-500 hover:text-neutral-200 hover:bg-neutral-900/50 transition-all duration-300"
+            title={isCollapsed ? "웹사이트 방문" : undefined}
           >
             <Globe className="w-5 h-5 flex-shrink-0 group-hover:rotate-12 transition-transform" />
-            {!isCollapsed && <span>Visit Website</span>}
+            {!isCollapsed && <span>웹사이트 방문</span>}
           </Link>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="p-3 border-t border-neutral-900/50 space-y-2">
+      <div className="p-4 border-t border-neutral-900/50 space-y-3">
         <button
           onClick={async () => {
-            if (!confirm('SIGN OUT?')) return;
+            if (!confirm('로그아웃 하시겠습니까?')) return;
             const { signOut } = await import('firebase/auth');
             const { auth } = await import('@/lib/firebase');
             if (auth) {
@@ -117,18 +116,18 @@ export default function Sidebar({ isCollapsed, onToggle }: { isCollapsed: boolea
             }
           }}
           className={cn(
-            "w-full group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-neutral-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200",
+            "w-full group flex items-center gap-3 px-3 py-3 rounded-2xl text-sm font-bold text-neutral-600 hover:text-rose-500 hover:bg-rose-500/10 transition-all duration-300",
             isCollapsed && "justify-center"
           )}
-          title={isCollapsed ? "Sign Out" : undefined}
+          title={isCollapsed ? "로그아웃" : undefined}
         >
-          <LogOut className="w-5 h-5 flex-shrink-0 group-hover:-translate-x-0.5 transition-transform" />
-          {!isCollapsed && <span>Sign Out</span>}
+          <LogOut className="w-5 h-5 flex-shrink-0 group-hover:-translate-x-1 transition-transform" />
+          {!isCollapsed && <span>로그아웃</span>}
         </button>
 
         <button
           onClick={onToggle}
-          className="w-full flex items-center justify-center p-2 rounded-lg text-neutral-600 hover:text-neutral-400 hover:bg-neutral-900 transition-colors"
+          className="w-full flex items-center justify-center p-3 rounded-xl text-neutral-700 hover:text-neutral-400 hover:bg-neutral-900 transition-colors"
         >
           {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
