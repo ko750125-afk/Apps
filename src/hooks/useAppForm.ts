@@ -86,18 +86,23 @@ export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) 
       return;
     }
 
-    setLoading(true);
+    setIsAnalyzing(true);
+    console.log('Starting GitHub analysis for:', formData.repo);
+    
     try {
       // 1. Extract owner/repo
       const cleanRepo = formData.repo.replace('https://github.com/', '').replace(/\/$/, '');
+      console.log('Clean repo path:', cleanRepo);
       
       // 2. Try to fetch package.json (main or master)
       let packageJson = null;
       for (const branch of ['main', 'master']) {
         try {
+          console.log(`Checking branch: ${branch}`);
           const res = await fetch(`https://raw.githubusercontent.com/${cleanRepo}/${branch}/package.json`);
           if (res.ok) {
             packageJson = await res.json();
+            console.log('Successfully fetched package.json from', branch);
             break;
           }
         } catch (e) {
@@ -106,7 +111,7 @@ export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) 
       }
 
       if (!packageJson) {
-        throw new Error('package.json을 찾을 수 없습니다. 주소나 브랜치명을 확인해주세요.');
+        throw new Error('package.json을 찾을 수 없습니다. 리포지토리가 공개(Public)인지, 혹은 package.json이 루트에 있는지 확인해주세요.');
       }
 
       // 3. Analyze dependencies
@@ -126,8 +131,13 @@ export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) 
       if (deps['shadcn-ui'] || deps['@radix-ui/react-primitive']) stack.push('Shadcn UI');
 
       // 4. Update Memo
-      const techStackMarkdown = `\n\n### Technical Details\n- **Frontend**: ${stack.filter(s => ['Next.js', 'React', 'Tailwind CSS', 'TypeScript', 'Framer Motion', 'Lucide React', 'Shadcn UI'].includes(s)).join(', ')}\n- **Backend**: ${stack.filter(s => ['Firebase', 'Supabase', 'Prisma', 'Drizzle ORM'].includes(s)).join(', ') || 'Client-side only'}\n- **Deployment**: Vercel (Auto-detected)`;
+      const frontend = stack.filter(s => ['Next.js', 'React', 'Tailwind CSS', 'TypeScript', 'Framer Motion', 'Lucide React', 'Shadcn UI'].includes(s)).join(', ');
+      const backend = stack.filter(s => ['Firebase', 'Supabase', 'Prisma', 'Drizzle ORM'].includes(s)).join(', ') || 'Client-side only';
       
+      const techStackMarkdown = `\n\n### Technical Details\n- **Frontend**: ${frontend}\n- **Backend**: ${backend}\n- **Deployment**: Vercel (Auto-detected)`;
+      
+      console.log('Analysis complete. Updating memo with:', techStackMarkdown);
+
       setFormData(prev => ({
         ...prev,
         memo: (prev.memo || '') + techStackMarkdown
