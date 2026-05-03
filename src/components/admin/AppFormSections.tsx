@@ -15,17 +15,17 @@ interface BaseSectionProps {
   isAnalyzing?: boolean;
 }
 
-/* ─── 01. Essential Info Section (Combined Identity + Assets) ─── */
+/* ─── 01. Essential Info Section ─── */
 const EssentialInfoSection = ({ formData, handleChange, setFormData, analyzeGitHubRepo, isAnalyzing }: BaseSectionProps) => (
-  <div className="bg-neutral-900/20 backdrop-blur-3xl border border-neutral-800/50 rounded-[3rem] p-8 md:p-12 space-y-12 shadow-2xl">
+  <div className="bg-neutral-900/10 border border-neutral-800/30 rounded-[2.5rem] p-8 md:p-12 space-y-12 transition-all hover:bg-neutral-900/20">
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-4">
-        <div className="w-14 h-14 bg-accent/10 rounded-[1.5rem] flex items-center justify-center border border-accent/20 shadow-inner">
-          <Layout className="w-7 h-7 text-accent" />
+        <div className="w-12 h-12 bg-neutral-900 rounded-2xl flex items-center justify-center border border-neutral-800">
+          <Layout className="w-6 h-6 text-neutral-400" />
         </div>
         <div>
-          <h3 className="text-3xl font-black text-white tracking-tight">앱 정보</h3>
-          <p className="text-sm text-neutral-500 font-medium tracking-wide">핵심 요소들을 한 곳에서 관리하세요.</p>
+          <h3 className="text-2xl font-bold text-white tracking-tight">Project Identity</h3>
+          <p className="text-[12px] text-neutral-500 font-medium">관리자의 핵심 정보를 정의합니다.</p>
         </div>
       </div>
       
@@ -33,66 +33,66 @@ const EssentialInfoSection = ({ formData, handleChange, setFormData, analyzeGitH
         type="button"
         onClick={() => setFormData(prev => ({ ...prev, featured: !prev.featured }))}
         className={cn(
-          "flex items-center gap-3 px-8 py-4 rounded-2xl border transition-all active:scale-95 shadow-lg",
+          "flex items-center gap-2.5 px-6 py-3.5 rounded-2xl border transition-all active:scale-95",
           formData.featured 
-            ? "bg-amber-500/10 border-amber-500/30 text-amber-500 shadow-amber-500/5" 
-            : "bg-neutral-950/60 border-neutral-800 text-neutral-600"
+            ? "bg-amber-500/5 border-amber-500/20 text-amber-500" 
+            : "bg-neutral-950 border-neutral-800 text-neutral-600 hover:text-neutral-400"
         )}
       >
-        <Star className={cn("w-5 h-5", formData.featured && "fill-amber-500")} />
-        <span className="text-sm font-black uppercase tracking-widest">추천 앱</span>
+        <Star className={cn("w-4 h-4", formData.featured && "fill-amber-500")} />
+        <span className="text-[11px] font-bold uppercase tracking-widest">Featured</span>
       </button>
     </div>
 
     <div className="space-y-10">
-      <FormField label="앱 이름 (Title)">
+      <FormField label="App Title">
         <input 
           type="text" 
           name="name" 
           value={formData.name} 
           onChange={handleChange} 
           required 
-          className={cn(inputClassName, "text-5xl font-black bg-transparent border-none focus:ring-0 px-0 py-2 h-auto text-white placeholder:text-neutral-800")} 
-          placeholder="App Name" 
+          className={cn(inputClassName, "text-4xl font-bold bg-transparent border-none focus:ring-0 p-0 h-auto text-white placeholder:text-neutral-800")} 
+          placeholder="Enter App Name" 
         />
       </FormField>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-        <FormField label="카테고리">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <FormField label="Category">
           <div className="relative">
             <Tag className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-600" />
-            <select name="category" value={formData.category} onChange={handleChange} className={cn(selectClassName, "pl-14 h-16 rounded-2xl bg-neutral-950/60")}>
+            <select name="category" value={formData.category} onChange={handleChange} className={cn(selectClassName, "pl-14 h-14")}>
               {CATEGORIES.filter(c => c !== 'All apps').map(cat => <option key={cat} value={cat}>{cat}</option>)}
             </select>
           </div>
         </FormField>
-        <FormField label="공개 상태">
+        <FormField label="Visibility Status">
           <div className="relative">
             <Eye className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-600" />
-            <select name="status" value={formData.status} onChange={handleChange} className={cn(selectClassName, "pl-14 h-16 rounded-2xl bg-neutral-950/60")}>
-              <option value="Exhibit">공개 (Live)</option>
-              <option value="Repair">비공개 (Maintenance)</option>
+            <select name="status" value={formData.status} onChange={handleChange} className={cn(selectClassName, "pl-14 h-14")}>
+              <option value="Exhibit">Public (Live)</option>
+              <option value="Repair">Private (Hidden)</option>
             </select>
           </div>
         </FormField>
       </div>
 
-      <FormField label="한 줄 소개">
+      <FormField label="Short Description">
         <div className="relative">
-          <Type className="absolute left-5 top-6 w-4 h-4 text-neutral-600" />
+          <Type className="absolute left-5 top-5 w-4 h-4 text-neutral-600" />
           <textarea 
             name="description" 
             value={formData.description || ''} 
             onChange={handleChange} 
-            className={cn(inputClassName, "min-h-[100px] pl-14 py-5 rounded-2xl bg-neutral-950/60 resize-none")} 
-            placeholder="이 앱은 어떤 역할을 하나요? 한 줄로 멋지게 설명해주세요." 
+            className={cn(inputClassName, "min-h-[80px] pl-14 py-4 resize-none")} 
+            placeholder="What does this app do?" 
           />
         </div>
       </FormField>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 pt-4">
-        <div className="space-y-8">
-          <FormField label="접속 URL (Link)">
+        <div className="space-y-6">
+          <FormField label="Live URL">
             <div className="relative group">
               <Globe className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-600 group-focus-within:text-accent transition-colors" />
               <input 
@@ -100,13 +100,13 @@ const EssentialInfoSection = ({ formData, handleChange, setFormData, analyzeGitH
                 name="url" 
                 value={formData.url || ''} 
                 onChange={handleChange} 
-                className={cn(inputClassName, "bg-neutral-950/60 border-neutral-800 pl-14 h-14 rounded-2xl")} 
+                className={cn(inputClassName, "pl-14 h-14")} 
                 placeholder="https://..." 
               />
             </div>
           </FormField>
-          <FormField label="GitHub 리포지토리 (Repo)">
-            <div className="flex gap-3">
+          <FormField label="GitHub Repository">
+            <div className="flex gap-2.5">
               <div className="relative group flex-1">
                 <LinkIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-600 group-focus-within:text-accent transition-colors" />
                 <input 
@@ -114,29 +114,29 @@ const EssentialInfoSection = ({ formData, handleChange, setFormData, analyzeGitH
                   name="repo" 
                   value={formData.repo || ''} 
                   onChange={handleChange} 
-                  className={cn(inputClassName, "bg-neutral-950/60 border-neutral-800 pl-14 h-14 rounded-2xl")} 
+                  className={cn(inputClassName, "pl-14 h-14")} 
                   placeholder="owner/repo" 
                 />
               </div>
               <button
                 type="button"
                 onClick={analyzeGitHubRepo}
-                disabled={isAnalyzing || !formData.repo}
+                disabled={isAnalyzing}
                 className={cn(
-                  "px-6 bg-neutral-800 hover:bg-neutral-700 text-white rounded-2xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap border border-neutral-700 disabled:opacity-50",
+                  "px-6 bg-neutral-100 hover:bg-white text-black rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 whitespace-nowrap disabled:opacity-50",
                   isAnalyzing && "cursor-wait"
                 )}
               >
                 {isAnalyzing ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-accent" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 ) : (
-                  <Sparkles className="w-3.5 h-3.5 text-accent" />
+                  <Sparkles className="w-3.5 h-3.5" />
                 )}
-                {isAnalyzing ? '분석 중...' : 'AUTO FILL (분석)'}
+                Auto Fill
               </button>
             </div>
           </FormField>
-          <FormField label="스크린샷 URL (Image)">
+          <FormField label="Screenshot URL">
             <div className="relative group">
               <ImageIcon className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-600 group-focus-within:text-accent transition-colors" />
               <input 
@@ -144,25 +144,22 @@ const EssentialInfoSection = ({ formData, handleChange, setFormData, analyzeGitH
                 name="image" 
                 value={formData.image || ''} 
                 onChange={handleChange} 
-                className={cn(inputClassName, "bg-neutral-950/60 border-neutral-800 pl-14 h-14 rounded-2xl")} 
+                className={cn(inputClassName, "pl-14 h-14")} 
                 placeholder="https://..." 
               />
             </div>
           </FormField>
         </div>
         
-        <div className="relative aspect-video rounded-[2.5rem] overflow-hidden border-2 border-neutral-800/50 bg-neutral-950 shadow-2xl group">
+        <div className="relative aspect-video rounded-[2rem] overflow-hidden border border-neutral-800/50 bg-neutral-950 group">
           {formData.image ? (
             <Image src={formData.image} alt="Preview" fill className="object-cover group-hover:scale-105 transition-transform duration-1000" unoptimized />
           ) : (
-            <div className="flex flex-col items-center justify-center h-full gap-4 opacity-20">
-              <ImageIcon className="w-16 h-16" />
-              <span className="text-xs font-black uppercase tracking-[0.3em]">No Preview</span>
+            <div className="flex flex-col items-center justify-center h-full gap-4 opacity-10">
+              <ImageIcon className="w-12 h-12" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em]">No Image</span>
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-8">
-            <span className="text-[10px] font-black text-white uppercase tracking-widest">Image Preview</span>
-          </div>
         </div>
       </div>
     </div>
@@ -171,14 +168,14 @@ const EssentialInfoSection = ({ formData, handleChange, setFormData, analyzeGitH
 
 /* ─── 02. Detailed Description Section ─── */
 const DetailedDescriptionSection = ({ formData, handleMemoChange }: Pick<BaseSectionProps, 'formData'> & { handleMemoChange: (val: string) => void }) => (
-  <div className="bg-neutral-900/20 backdrop-blur-3xl border border-neutral-800/50 rounded-[3rem] p-8 md:p-12 space-y-10 shadow-2xl">
+  <div className="bg-neutral-900/10 border border-neutral-800/30 rounded-[2.5rem] p-8 md:p-12 space-y-10 transition-all hover:bg-neutral-900/20">
     <div className="flex items-center gap-4">
-      <div className="w-14 h-14 bg-amber-500/10 rounded-[1.5rem] flex items-center justify-center border border-amber-500/20 shadow-inner">
-        <Sparkles className="w-7 h-7 text-amber-500" />
+      <div className="w-12 h-12 bg-neutral-900 rounded-2xl flex items-center justify-center border border-neutral-800">
+        <Sparkles className="w-6 h-6 text-neutral-400" />
       </div>
       <div>
-        <h3 className="text-3xl font-black text-white tracking-tight">Technical Details</h3>
-        <p className="text-sm text-neutral-500 font-medium tracking-wide">앱의 기술적 명세와 개발 메모를 관리하세요. (Markdown 지원)</p>
+        <h3 className="text-2xl font-bold text-white tracking-tight">Technical Details</h3>
+        <p className="text-[12px] text-neutral-500 font-medium">기술 스택과 상세 정보를 관리합니다.</p>
       </div>
     </div>
 
@@ -189,13 +186,13 @@ const DetailedDescriptionSection = ({ formData, handleMemoChange }: Pick<BaseSec
         onChange={(e) => handleMemoChange(e.target.value)} 
         className={cn(
           inputClassName, 
-          "min-h-[500px] bg-neutral-950/60 border-neutral-800 rounded-[2.5rem] p-10 text-xl leading-relaxed text-neutral-200 placeholder:text-neutral-800 focus:border-accent/40 focus:ring-accent/5 transition-all resize-none shadow-inner"
+          "min-h-[400px] p-8 text-lg leading-relaxed text-neutral-300 resize-none bg-neutral-950/40"
         )} 
-        placeholder="어떤 앱인가요? 개발 과정이나 주요 특징을 자유롭게 적어주세요." 
+        placeholder="Describe the technical implementation..." 
       />
-      <div className="absolute bottom-10 right-10 flex items-center gap-3 px-6 py-3 bg-neutral-900/90 rounded-2xl border border-neutral-800/50 text-[10px] font-black text-neutral-500 tracking-[0.2em] shadow-2xl">
-        <Sparkles className="w-3 h-3 text-accent" />
-        {formData.memo?.length || 0} CHARACTERS
+      <div className="absolute bottom-6 right-6 flex items-center gap-2.5 px-4 py-2 bg-neutral-950 rounded-xl border border-neutral-800 text-[9px] font-bold text-neutral-500 tracking-widest">
+        <Info className="w-3 h-3" />
+        {formData.memo?.length || 0} CHARS
       </div>
     </div>
   </div>
@@ -203,7 +200,7 @@ const DetailedDescriptionSection = ({ formData, handleMemoChange }: Pick<BaseSec
 
 /* ─── Main Form Flow ─── */
 export const AppFormMain = (props: BaseSectionProps & { handleMemoChange: (val: string) => void; loading: boolean; isAnalyzing: boolean; isEditing: boolean }) => (
-  <div className="max-w-5xl mx-auto space-y-10 pb-40 px-6">
+  <div className="max-w-4xl mx-auto space-y-8 pb-40 px-6">
     <EssentialInfoSection {...props} />
     <DetailedDescriptionSection {...props} />
   </div>
@@ -217,24 +214,25 @@ export const AppFormActions = ({
   loading: boolean;
   onAbort: () => void;
 }) => (
-  <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-6">
-    <div className="bg-neutral-900/80 backdrop-blur-2xl border border-neutral-800/50 p-3 rounded-[2.5rem] flex items-center gap-3 shadow-[0_30px_60px_rgba(0,0,0,0.5)]">
+  <div className="fixed bottom-12 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-6">
+    <div className="bg-neutral-950/80 backdrop-blur-3xl border border-neutral-800/50 p-2.5 rounded-[2.2rem] flex items-center gap-2.5 shadow-[0_40px_80px_-20px_rgba(0,0,0,0.8)]">
       <button
         type="button"
         onClick={onAbort}
-        className="flex-1 h-16 rounded-[1.8rem] text-sm font-black text-neutral-500 hover:text-white hover:bg-neutral-800 transition-all active:scale-95 uppercase tracking-widest"
+        className="flex-1 h-14 rounded-2xl text-[11px] font-bold text-neutral-500 hover:text-white hover:bg-neutral-900 transition-all active:scale-95 uppercase tracking-widest"
       >
-        CANCEL
+        Discard
       </button>
       <button
         type="submit"
         disabled={loading}
-        className="flex-[2] h-16 flex items-center justify-center gap-3 rounded-[1.8rem] text-base font-black text-white bg-accent hover:bg-accent-hover shadow-xl shadow-accent/20 transition-all active:scale-95 disabled:opacity-50 uppercase tracking-widest"
+        className="flex-[1.5] h-14 flex items-center justify-center gap-2.5 rounded-2xl text-sm font-bold text-black bg-white hover:bg-neutral-200 transition-all active:scale-95 disabled:opacity-50 uppercase tracking-widest shadow-lg shadow-white/5"
       >
-        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
-        {loading ? 'SAVING...' : 'SAVE PROJECT'}
+        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+        {loading ? 'Processing' : 'Publish'}
       </button>
     </div>
   </div>
 );
+
 

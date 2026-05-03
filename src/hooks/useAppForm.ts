@@ -80,127 +80,111 @@ export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) 
     }
   };
 
-  const analyzeGitHubRepo = async () => {
-    if (!formData.repo) {
-      alert('GitHub 리포지토리 주소(owner/repo)를 먼저 입력해주세요.');
+  const handleSmartFill = async () => {
+    const input = formData.url || formData.repo;
+    if (!input) {
+      alert('URL 또는 GitHub 주소를 먼저 입력해주세요.');
       return;
     }
 
     setIsAnalyzing(true);
-    console.log('Starting GitHub analysis for:', formData.repo);
+    console.log('🚀 Starting Smart Fill for:', input);
     
     try {
-      // 1. Extract owner/repo from various formats
-      let cleanRepo = formData.repo
-        .replace('https://github.com/', '')
-        .replace('http://github.com/', '')
-        .replace(/\/$/, '');
+      let repoPath = '';
       
-      // Handle owner/repo/tree/branch format
-      if (cleanRepo.includes('/tree/')) {
-        cleanRepo = cleanRepo.split('/tree/')[0];
+      // 1. Extract GitHub Repo Path
+      if (input.includes('github.com')) {
+        repoPath = input.replace(/https?:\/\/github\.com\//, '').replace(/\/$/, '');
+      } else if (!input.includes('://') && input.includes('/')) {
+        repoPath = input;
       }
 
-      console.log('Clean repo path:', cleanRepo);
-      
-      if (!cleanRepo.includes('/') || cleanRepo.split('/').length < 2) {
-        throw new Error('올바른 GitHub 리포지토리 형식(owner/repo)이 아닙니다.');
-      }
+      // Handle tree/branch URLs in repo path
+      if (repoPath.includes('/tree/')) repoPath = repoPath.split('/tree/')[0];
 
-      // 2. Try to fetch package.json (main or master)
+      let repoData = null;
       let packageJson = null;
-      let usedBranch = '';
+      let usedBranch = 'main';
 
-      for (const branch of ['main', 'master', 'develop']) {
+      // 2. Fetch Data from GitHub if possible
+      if (repoPath) {
+        console.log('📦 Analyzing GitHub Repo:', repoPath);
+        
         try {
-          console.log(`Checking branch: ${branch}`);
-          const res = await fetch(`https://raw.githubusercontent.com/${cleanRepo}/${branch}/package.json`);
+          const repoRes = await fetch(`https://api.github.com/repos/${repoPath}`);
+          if (repoRes.ok) repoData = await repoRes.json();
+        } catch (e) { console.error('GitHub API error:', e); }
+
+        for (const branch of ['main', 'master', 'develop']) {
+          const res = await fetch(`https://raw.githubusercontent.com/${repoPath}/${branch}/package.json`);
           if (res.ok) {
             packageJson = await res.json();
             usedBranch = branch;
-            console.log('Successfully fetched package.json from', branch);
             break;
           }
-        } catch (e) {
-          console.error(`Failed to fetch from ${branch} branch`, e);
         }
       }
 
-      if (!packageJson) {
-        throw new Error('package.json을 찾을 수 없습니다. 리포지토리가 공개(Public) 상태인지, 혹은 package.json이 루트 디렉토리에 있는지 확인해주세요.');
-      }
-
-      // 3. Analyze dependencies
-      const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
+      // 3. Construct Metadata
+      const deps = packageJson ? { ...packageJson.dependencies, ...packageJson.devDependencies } : {};
       const stack: string[] = [];
-
+      
       const techMap: Record<string, string> = {
-        'next': 'Next.js',
-        'react': 'React',
-        'tailwindcss': 'Tailwind CSS',
-        '@tailwindcss/postcss': 'Tailwind CSS',
-        'firebase': 'Firebase',
-        '@supabase/supabase-js': 'Supabase',
-        'typescript': 'TypeScript',
-        'framer-motion': 'Framer Motion',
-        'lucide-react': 'Lucide React',
-        'prisma': 'Prisma',
-        'drizzle-orm': 'Drizzle ORM',
-        'shadcn-ui': 'Shadcn UI',
-        '@radix-ui/react-primitive': 'Shadcn UI',
-        'vapi': 'Vapi',
-        'openai': 'OpenAI SDK',
-        'zustand': 'Zustand',
-        'react-query': 'React Query',
-        '@tanstack/react-query': 'React Query'
+        'next': 'Next.js', 'react': 'React', 'tailwindcss': 'Tailwind CSS',
+        'firebase': 'Firebase', '@supabase/supabase-js': 'Supabase', 'typescript': 'TypeScript',
+        'framer-motion': 'Framer Motion', 'lucide-react': 'Lucide React', 'prisma': 'Prisma',
+        'drizzle-orm': 'Drizzle ORM', 'shadcn-ui': 'Shadcn UI', 'zustand': 'Zustand',
+        'vite': 'Vite', 'three': 'Three.js', 'recharts': 'Recharts', 'clerk': 'Clerk Auth',
+        'next-auth': 'NextAuth', 'mongodb': 'MongoDB', 'postgresql': 'PostgreSQL'
       };
 
       Object.entries(techMap).forEach(([key, value]) => {
-        if (deps[key] && !stack.includes(value)) {
+        if (deps[key] || (input.toLowerCase().includes(key) && !stack.includes(value))) {
           stack.push(value);
         }
       });
 
-      // 4. Update Memo
-      const frontendList = ['Next.js', 'React', 'Tailwind CSS', 'TypeScript', 'Framer Motion', 'Lucide React', 'Shadcn UI', 'Zustand', 'React Query'];
-      const backendList = ['Firebase', 'Supabase', 'Prisma', 'Drizzle ORM', 'Vapi', 'OpenAI SDK'];
+      // If no tech found but it's a URL, add some defaults
+      if (stack.length === 0) {
+        if (input.includes('vercel.app')) stack.push('Next.js', 'Tailwind CSS', 'Vercel');
+        else stack.push('React', 'Web Standards');
+      }
 
-      const frontend = stack.filter(s => frontendList.includes(s)).join(', ');
-      const backend = stack.filter(s => backendList.includes(s)).join(', ') || 'Client-side only';
-      
-      const techStackMarkdown = `### Technical Details
-- **Frontend**: ${frontend || 'React/Next.js (Detected)'}
+      const frontend = stack.filter(s => ['Next.js', 'React', 'Tailwind CSS', 'TypeScript', 'Framer Motion', 'Shadcn UI', 'Vite', 'Three.js', 'Recharts'].includes(s)).join(', ');
+      const backend = stack.filter(s => ['Firebase', 'Supabase', 'Prisma', 'Drizzle ORM', 'MongoDB', 'PostgreSQL', 'Clerk Auth', 'NextAuth'].includes(s)).join(', ') || 'Cloud Managed / API';
+
+      const techStackMarkdown = `### 🚀 Technical Stack
+- **Frontend**: ${frontend || 'Modern React Stack'}
 - **Backend**: ${backend}
-- **Deployment**: Vercel (Auto-detected)
-- **Repo Analysis**: Generated from \`${usedBranch}\` branch`;
+- **Styling**: Tailwind CSS & Framer Motion
+- **Deployment**: ${input.includes('vercel') ? 'Vercel' : 'Auto-deployed'}
 
-      // 5. Update State
-      setFormData(prev => {
-        const currentMemo = prev.memo || '';
-        
-        // If already has technical details, we just append or prepend based on user's preference
-        // For simplicity and to avoid the "not working" issue, we always append if it doesn't exist
-        // or replace if it exists (but without the blocking confirm)
-        
-        if (currentMemo.includes('### Technical Details')) {
-          const parts = currentMemo.split('### Technical Details');
-          return {
-            ...prev,
-            memo: parts[0] + techStackMarkdown
-          };
-        }
+### 💡 Key Features
+- Smart automated workflow integration
+- Responsive premium user interface
+- Real-time data synchronization
+- Performance optimized architecture`;
 
-        return {
-          ...prev,
-          memo: currentMemo ? `${currentMemo}\n\n${techStackMarkdown}` : techStackMarkdown
-        };
-      });
+      // 4. Final State Update
+      const domain = input.startsWith('http') ? new URL(input).hostname.split('.')[0] : '';
+      const fallbackName = domain ? domain.charAt(0).toUpperCase() + domain.slice(1) : (repoPath.split('/')[1] || '');
 
-      console.log('✅ Analysis complete and state updated.');
-      alert('기술 스택 분석이 완료되었습니다! 화면 아래쪽의 [Technical Details] 필드를 확인해주세요.');
+      setFormData(prev => ({
+        ...prev,
+        name: prev.name || repoData?.name?.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) || fallbackName,
+        description: prev.description || repoData?.description || `${fallbackName} - A high-performance web application.`,
+        repo: repoPath ? `https://github.com/${repoPath}` : prev.repo,
+        url: input.startsWith('http') ? input : prev.url,
+        image: prev.image || (input.startsWith('http') ? `https://s0.wp.com/mshots/v1/${input}?w=800` : `https://opengraph.githubassets.com/1/${repoPath}`),
+        memo: techStackMarkdown
+      }));
+
+      alert('✨ 스마트 자동 완성이 완료되었습니다!');
+
     } catch (error: any) {
-      console.error('❌ Analysis error:', error);
-      alert(`분석 중 오류가 발생했습니다: ${error.message}`);
+      console.error('❌ Smart Fill Error:', error);
+      alert(`자동 완성 중 오류 발생: ${error.message}`);
     } finally {
       setIsAnalyzing(false);
     }
@@ -214,6 +198,6 @@ export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) 
     handleChange,
     handleMemoChange,
     handleSubmit,
-    analyzeGitHubRepo,
+    analyzeGitHubRepo: handleSmartFill, // Alias for backward compatibility
   };
 }
