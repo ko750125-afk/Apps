@@ -174,17 +174,20 @@ export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) 
 - **Deployment**: Vercel (Auto-detected)
 - **Repo Analysis**: Generated from \`${usedBranch}\` branch`;
 
+      // 5. Update State
       setFormData(prev => {
         const currentMemo = prev.memo || '';
-        // Avoid duplicate Technical Details sections
+        
+        // If already has technical details, we just append or prepend based on user's preference
+        // For simplicity and to avoid the "not working" issue, we always append if it doesn't exist
+        // or replace if it exists (but without the blocking confirm)
+        
         if (currentMemo.includes('### Technical Details')) {
-          if (confirm('이미 Technical Details 섹션이 존재합니다. 덮어씌울까요?')) {
-            return {
-              ...prev,
-              memo: currentMemo.split('### Technical Details')[0] + techStackMarkdown
-            };
-          }
-          return prev;
+          const parts = currentMemo.split('### Technical Details');
+          return {
+            ...prev,
+            memo: parts[0] + techStackMarkdown
+          };
         }
 
         return {
@@ -193,9 +196,10 @@ export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) 
         };
       });
 
-      alert('기술 스택 분석이 완료되었습니다! Technical Details 섹션을 확인해주세요.');
+      console.log('✅ Analysis complete and state updated.');
+      alert('기술 스택 분석이 완료되었습니다! 화면 아래쪽의 [Technical Details] 필드를 확인해주세요.');
     } catch (error: any) {
-      console.error('Analysis error:', error);
+      console.error('❌ Analysis error:', error);
       alert(`분석 중 오류가 발생했습니다: ${error.message}`);
     } finally {
       setIsAnalyzing(false);
