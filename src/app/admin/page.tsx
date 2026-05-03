@@ -47,9 +47,14 @@ export default function AdminPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-      <DashboardHeader searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
+      <DashboardHeader />
       <DashboardStats apps={allApps} />
-      <DashboardTable apps={apps} onDelete={handleDelete} />
+      <DashboardTable 
+        apps={apps} 
+        searchTerm={searchTerm} 
+        setSearchTerm={setSearchTerm} 
+        onDelete={handleDelete} 
+      />
     </div>
   );
 }

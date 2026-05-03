@@ -83,108 +83,131 @@ export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) 
   const handleSmartFill = async () => {
     const input = formData.url || formData.repo;
     if (!input) {
-      alert('URL 또는 GitHub 주소를 먼저 입력해주세요.');
+      alert('분석할 URL 또는 GitHub 주소를 먼저 입력해주세요.');
       return;
     }
 
     setIsAnalyzing(true);
-    console.log('🚀 Starting Smart Fill for:', input);
     
     try {
       let repoPath = '';
-      
-      // 1. Extract GitHub Repo Path
-      if (input.includes('github.com')) {
-        repoPath = input.replace(/https?:\/\/github\.com\//, '').replace(/\/$/, '');
-      } else if (!input.includes('://') && input.includes('/')) {
-        repoPath = input;
+      let analyzedData: any = null;
+
+      // 1. Fetch Metadata from API
+      try {
+        const analyzeRes = await fetch(`/api/analyze?url=${encodeURIComponent(input)}`);
+        if (analyzeRes.ok) {
+          analyzedData = await analyzeRes.json();
+          // Try to extract GitHub URL from metadata if not already provided
+          if (!formData.repo) {
+            const desc = analyzedData.description || '';
+            const githubMatch = desc.match(/github\.com\/([^/]+\/[^/\s?]+)/);
+            if (githubMatch) repoPath = githubMatch[1].replace(/[\),.]/g, '');
+          }
+        }
+      } catch (e) {
+        console.error('Metadata API error:', e);
       }
 
-      // Handle tree/branch URLs in repo path
-      if (repoPath.includes('/tree/')) repoPath = repoPath.split('/tree/')[0];
+      // 2. Extract GitHub Repo Path if explicitly provided or found in metadata
+      const explicitGithubMatch = input.match(/github\.com\/([^/]+\/[^/\s?]+)/);
+      if (explicitGithubMatch) {
+        repoPath = explicitGithubMatch[1].split('/tree/')[0].replace(/\/$/, '');
+      }
 
       let repoData = null;
       let packageJson = null;
-      let usedBranch = 'main';
 
-      // 2. Fetch Data from GitHub if possible
+      // 3. GitHub Analysis with Deep Search
       if (repoPath) {
-        console.log('📦 Analyzing GitHub Repo:', repoPath);
-        
         try {
           const repoRes = await fetch(`https://api.github.com/repos/${repoPath}`);
           if (repoRes.ok) repoData = await repoRes.json();
-        } catch (e) { console.error('GitHub API error:', e); }
-
-        for (const branch of ['main', 'master', 'develop']) {
-          const res = await fetch(`https://raw.githubusercontent.com/${repoPath}/${branch}/package.json`);
-          if (res.ok) {
-            packageJson = await res.json();
-            usedBranch = branch;
-            break;
+          
+          // Try multiple branches for package.json
+          const branches = ['main', 'master', 'develop', 'production'];
+          for (const branch of branches) {
+            const res = await fetch(`https://raw.githubusercontent.com/${repoPath}/${branch}/package.json`);
+            if (res.ok) {
+              packageJson = await res.json();
+              break;
+            }
           }
-        }
+        } catch (e) { console.error('GitHub API error:', e); }
       }
 
-      // 3. Construct Metadata
+      // 4. Advanced Tech Stack Detection
       const deps = packageJson ? { ...packageJson.dependencies, ...packageJson.devDependencies } : {};
       const stack: string[] = [];
       
       const techMap: Record<string, string> = {
         'next': 'Next.js', 'react': 'React', 'tailwindcss': 'Tailwind CSS',
-        'firebase': 'Firebase', '@supabase/supabase-js': 'Supabase', 'typescript': 'TypeScript',
+        'firebase': 'Firebase', 'supabase': 'Supabase', 'typescript': 'TypeScript',
         'framer-motion': 'Framer Motion', 'lucide-react': 'Lucide React', 'prisma': 'Prisma',
-        'drizzle-orm': 'Drizzle ORM', 'shadcn-ui': 'Shadcn UI', 'zustand': 'Zustand',
-        'vite': 'Vite', 'three': 'Three.js', 'recharts': 'Recharts', 'clerk': 'Clerk Auth',
-        'next-auth': 'NextAuth', 'mongodb': 'MongoDB', 'postgresql': 'PostgreSQL'
+        'shadcn': 'Shadcn UI', 'zustand': 'Zustand', 'vite': 'Vite', 'three': 'Three.js',
+        'radix-ui': 'Radix UI', 'next-auth': 'NextAuth.js', 'tanstack/react-query': 'React Query',
+        'recoil': 'Recoil', 'redux': 'Redux', 'axios': 'Axios', 'styled-components': 'Styled Components'
       };
 
+      // Detect from dependencies
       Object.entries(techMap).forEach(([key, value]) => {
-        if (deps[key] || (input.toLowerCase().includes(key) && !stack.includes(value))) {
-          stack.push(value);
+        if (deps[key] || Object.keys(deps).some(d => d.includes(key))) {
+          if (!stack.includes(value)) stack.push(value);
         }
       });
 
-      // If no tech found but it's a URL, add some defaults
-      if (stack.length === 0) {
-        if (input.includes('vercel.app')) stack.push('Next.js', 'Tailwind CSS', 'Vercel');
-        else stack.push('React', 'Web Standards');
+      // Detect from keywords in metadata/URL
+      const contentToScan = (analyzedData?.description || '') + (analyzedData?.title || '') + (repoData?.description || '') + input.toLowerCase();
+      if (contentToScan.includes('nextjs') || contentToScan.includes('next.js')) stack.push('Next.js');
+      if (contentToScan.includes('react')) stack.push('React');
+      if (contentToScan.includes('tailwind')) stack.push('Tailwind CSS');
+      if (contentToScan.includes('firebase')) stack.push('Firebase');
+      if (contentToScan.includes('supabase')) stack.push('Supabase');
+      if (contentToScan.includes('three.js') || contentToScan.includes('threejs')) stack.push('Three.js');
+
+      const uniqueStack = Array.from(new Set(stack));
+
+      // Default fallbacks if detection fails
+      if (uniqueStack.length < 1) {
+        if (input.includes('vercel.app')) uniqueStack.push('Next.js', 'Tailwind CSS');
+        else uniqueStack.push('React', 'Modern Web Stack');
       }
 
-      const frontend = stack.filter(s => ['Next.js', 'React', 'Tailwind CSS', 'TypeScript', 'Framer Motion', 'Shadcn UI', 'Vite', 'Three.js', 'Recharts'].includes(s)).join(', ');
-      const backend = stack.filter(s => ['Firebase', 'Supabase', 'Prisma', 'Drizzle ORM', 'MongoDB', 'PostgreSQL', 'Clerk Auth', 'NextAuth'].includes(s)).join(', ') || 'Cloud Managed / API';
+      const frontend = uniqueStack.filter(s => ['Next.js', 'React', 'Tailwind CSS', 'TypeScript', 'Framer Motion', 'Shadcn UI', 'Vite', 'Three.js', 'Radix UI', 'Styled Components'].includes(s)).join(', ') || 'Next.js, React';
+      const backend = uniqueStack.filter(s => ['Firebase', 'Supabase', 'Prisma', 'NextAuth.js'].includes(s)).join(', ') || 'Cloud Architecture';
 
-      const techStackMarkdown = `### 🚀 Technical Stack
-- **Frontend**: ${frontend || 'Modern React Stack'}
-- **Backend**: ${backend}
-- **Styling**: Tailwind CSS & Framer Motion
-- **Deployment**: ${input.includes('vercel') ? 'Vercel' : 'Auto-deployed'}
+      const techStackMarkdown = `### 🛠 Technical Specifications
+- **Frontend Framework**: ${frontend}
+- **Backend Architecture**: ${backend}
+- **Language**: ${uniqueStack.includes('TypeScript') ? 'TypeScript (Strict Mode)' : 'Modern JavaScript (ES6+)'}
+- **Styling Strategy**: ${uniqueStack.includes('Tailwind CSS') ? 'Tailwind CSS (Utility-first)' : 'Modern CSS (Module/Tailwind)'}
 
-### 💡 Key Features
-- Smart automated workflow integration
-- Responsive premium user interface
-- Real-time data synchronization
-- Performance optimized architecture`;
+### 🚀 Key Features & Implementation
+- **Interactive UI**: High-fidelity user interface with smooth state transitions.
+- **Data Integration**: Robust data synchronization and cloud-native architecture.
+- **Performance**: Optimized asset delivery and fast execution patterns.
+- **Responsive Design**: Mobile-first fluid layout supporting all modern devices.
 
-      // 4. Final State Update
-      const domain = input.startsWith('http') ? new URL(input).hostname.split('.')[0] : '';
-      const fallbackName = domain ? domain.charAt(0).toUpperCase() + domain.slice(1) : (repoPath.split('/')[1] || '');
+### 🛡 System Integrity
+- **Security**: Implementation of secure data handling and authentication protocols.
+- **Scalability**: Engineered for high-performance and global availability.`;
 
+      // 5. Final State Update
       setFormData(prev => ({
         ...prev,
-        name: prev.name || repoData?.name?.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) || fallbackName,
-        description: prev.description || repoData?.description || `${fallbackName} - A high-performance web application.`,
+        name: prev.name || analyzedData?.title?.split(' - ')[0]?.split(' | ')[0]?.trim() || repoData?.name?.replace(/[-_]/g, ' ') || '',
+        description: prev.description || analyzedData?.description || repoData?.description || 'A professional application engineered for optimal performance and user experience.',
         repo: repoPath ? `https://github.com/${repoPath}` : prev.repo,
         url: input.startsWith('http') ? input : prev.url,
-        image: prev.image || (input.startsWith('http') ? `https://s0.wp.com/mshots/v1/${input}?w=800` : `https://opengraph.githubassets.com/1/${repoPath}`),
-        memo: techStackMarkdown
+        image: prev.image || analyzedData?.image || (input.startsWith('http') ? `https://s0.wp.com/mshots/v1/${input}?w=800` : `https://opengraph.githubassets.com/1/${repoPath}`),
+        memo: techStackMarkdown // Force update technical details
       }));
 
-      alert('✨ 스마트 자동 완성이 완료되었습니다!');
+      alert('✅ SYSTEM ANALYSIS COMPLETE: Technical details have been successfully synthesized.');
 
     } catch (error: any) {
       console.error('❌ Smart Fill Error:', error);
-      alert(`자동 완성 중 오류 발생: ${error.message}`);
+      alert('분석 중 오류가 발생했습니다. 로그를 확인해주세요.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -198,6 +221,6 @@ export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) 
     handleChange,
     handleMemoChange,
     handleSubmit,
-    analyzeGitHubRepo: handleSmartFill, // Alias for backward compatibility
+    analyzeGitHubRepo: handleSmartFill,
   };
 }
