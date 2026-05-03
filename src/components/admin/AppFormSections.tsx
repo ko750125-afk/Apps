@@ -132,7 +132,7 @@ const EssentialInfoSection = ({ formData, handleChange, setFormData, analyzeGitH
                 ) : (
                   <Sparkles className="w-3.5 h-3.5 text-accent" />
                 )}
-                {isAnalyzing ? '분석 중...' : '분석'}
+                {isAnalyzing ? '분석 중...' : 'AUTO FILL (분석)'}
               </button>
             </div>
           </FormField>

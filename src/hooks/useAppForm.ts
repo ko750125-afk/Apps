@@ -90,18 +90,34 @@ export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) 
     console.log('Starting GitHub analysis for:', formData.repo);
     
     try {
-      // 1. Extract owner/repo
-      const cleanRepo = formData.repo.replace('https://github.com/', '').replace(/\/$/, '');
+      // 1. Extract owner/repo from various formats
+      let cleanRepo = formData.repo
+        .replace('https://github.com/', '')
+        .replace('http://github.com/', '')
+        .replace(/\/$/, '');
+      
+      // Handle owner/repo/tree/branch format
+      if (cleanRepo.includes('/tree/')) {
+        cleanRepo = cleanRepo.split('/tree/')[0];
+      }
+
       console.log('Clean repo path:', cleanRepo);
       
+      if (!cleanRepo.includes('/') || cleanRepo.split('/').length < 2) {
+        throw new Error('올바른 GitHub 리포지토리 형식(owner/repo)이 아닙니다.');
+      }
+
       // 2. Try to fetch package.json (main or master)
       let packageJson = null;
-      for (const branch of ['main', 'master']) {
+      let usedBranch = '';
+
+      for (const branch of ['main', 'master', 'develop']) {
         try {
           console.log(`Checking branch: ${branch}`);
           const res = await fetch(`https://raw.githubusercontent.com/${cleanRepo}/${branch}/package.json`);
           if (res.ok) {
             packageJson = await res.json();
+            usedBranch = branch;
             console.log('Successfully fetched package.json from', branch);
             break;
           }
@@ -111,39 +127,73 @@ export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) 
       }
 
       if (!packageJson) {
-        throw new Error('package.json을 찾을 수 없습니다. 리포지토리가 공개(Public)인지, 혹은 package.json이 루트에 있는지 확인해주세요.');
+        throw new Error('package.json을 찾을 수 없습니다. 리포지토리가 공개(Public) 상태인지, 혹은 package.json이 루트 디렉토리에 있는지 확인해주세요.');
       }
 
       // 3. Analyze dependencies
       const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
       const stack: string[] = [];
 
-      if (deps['next']) stack.push('Next.js');
-      if (deps['react']) stack.push('React');
-      if (deps['tailwindcss'] || deps['@tailwindcss/postcss']) stack.push('Tailwind CSS');
-      if (deps['firebase']) stack.push('Firebase');
-      if (deps['@supabase/supabase-js']) stack.push('Supabase');
-      if (deps['typescript']) stack.push('TypeScript');
-      if (deps['framer-motion']) stack.push('Framer Motion');
-      if (deps['lucide-react']) stack.push('Lucide React');
-      if (deps['prisma']) stack.push('Prisma');
-      if (deps['drizzle-orm']) stack.push('Drizzle ORM');
-      if (deps['shadcn-ui'] || deps['@radix-ui/react-primitive']) stack.push('Shadcn UI');
+      const techMap: Record<string, string> = {
+        'next': 'Next.js',
+        'react': 'React',
+        'tailwindcss': 'Tailwind CSS',
+        '@tailwindcss/postcss': 'Tailwind CSS',
+        'firebase': 'Firebase',
+        '@supabase/supabase-js': 'Supabase',
+        'typescript': 'TypeScript',
+        'framer-motion': 'Framer Motion',
+        'lucide-react': 'Lucide React',
+        'prisma': 'Prisma',
+        'drizzle-orm': 'Drizzle ORM',
+        'shadcn-ui': 'Shadcn UI',
+        '@radix-ui/react-primitive': 'Shadcn UI',
+        'vapi': 'Vapi',
+        'openai': 'OpenAI SDK',
+        'zustand': 'Zustand',
+        'react-query': 'React Query',
+        '@tanstack/react-query': 'React Query'
+      };
+
+      Object.entries(techMap).forEach(([key, value]) => {
+        if (deps[key] && !stack.includes(value)) {
+          stack.push(value);
+        }
+      });
 
       // 4. Update Memo
-      const frontend = stack.filter(s => ['Next.js', 'React', 'Tailwind CSS', 'TypeScript', 'Framer Motion', 'Lucide React', 'Shadcn UI'].includes(s)).join(', ');
-      const backend = stack.filter(s => ['Firebase', 'Supabase', 'Prisma', 'Drizzle ORM'].includes(s)).join(', ') || 'Client-side only';
-      
-      const techStackMarkdown = `\n\n### Technical Details\n- **Frontend**: ${frontend}\n- **Backend**: ${backend}\n- **Deployment**: Vercel (Auto-detected)`;
-      
-      console.log('Analysis complete. Updating memo with:', techStackMarkdown);
+      const frontendList = ['Next.js', 'React', 'Tailwind CSS', 'TypeScript', 'Framer Motion', 'Lucide React', 'Shadcn UI', 'Zustand', 'React Query'];
+      const backendList = ['Firebase', 'Supabase', 'Prisma', 'Drizzle ORM', 'Vapi', 'OpenAI SDK'];
 
-      setFormData(prev => ({
-        ...prev,
-        memo: (prev.memo || '') + techStackMarkdown
-      }));
+      const frontend = stack.filter(s => frontendList.includes(s)).join(', ');
+      const backend = stack.filter(s => backendList.includes(s)).join(', ') || 'Client-side only';
+      
+      const techStackMarkdown = `### Technical Details
+- **Frontend**: ${frontend || 'React/Next.js (Detected)'}
+- **Backend**: ${backend}
+- **Deployment**: Vercel (Auto-detected)
+- **Repo Analysis**: Generated from \`${usedBranch}\` branch`;
 
-      alert('기술 스택 분석이 완료되었습니다!');
+      setFormData(prev => {
+        const currentMemo = prev.memo || '';
+        // Avoid duplicate Technical Details sections
+        if (currentMemo.includes('### Technical Details')) {
+          if (confirm('이미 Technical Details 섹션이 존재합니다. 덮어씌울까요?')) {
+            return {
+              ...prev,
+              memo: currentMemo.split('### Technical Details')[0] + techStackMarkdown
+            };
+          }
+          return prev;
+        }
+
+        return {
+          ...prev,
+          memo: currentMemo ? `${currentMemo}\n\n${techStackMarkdown}` : techStackMarkdown
+        };
+      });
+
+      alert('기술 스택 분석이 완료되었습니다! Technical Details 섹션을 확인해주세요.');
     } catch (error: any) {
       console.error('Analysis error:', error);
       alert(`분석 중 오류가 발생했습니다: ${error.message}`);
