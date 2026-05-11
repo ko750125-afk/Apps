@@ -1,0 +1,10 @@
+{
+  "name": "rapidforge-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix apps",
+    "build": "npm run build --prefix apps",
+    "start": "npm run start --prefix apps"
+  }
+}
