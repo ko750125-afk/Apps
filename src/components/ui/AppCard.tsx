@@ -129,7 +129,7 @@ export default function AppCard({ app, index }: AppCardProps) {
       className="h-full"
     >
       <MotionLink
-        href={`/app/${app.id}`}
+        href={`/projects/${app.id}`}
         className={wrapperClass}
         whileHover={{ 
           y: -8,

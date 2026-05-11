@@ -16,7 +16,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const apps = await getApps();
     const appRoutes = apps.map((app) => ({
-      url: `${baseUrl}/app/${app.id}`,
+      url: `${baseUrl}/projects/${app.id}`,
       lastModified: new Date(),
       changeFrequency: 'weekly' as const,
       priority: 0.6,
