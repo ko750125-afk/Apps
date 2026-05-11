@@ -1,39 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  reactStrictMode: true,
-  /*
-  async headers() {
-    return [
-      {
-        source: '/(.*)',
-        headers: [
-          {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin-allow-popups',
-          },
-        ],
-      },
-    ];
-  },
-  */
   images: {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'api.microlink.io',
-      },
-      {
-        protocol: 'https',
-        hostname: 'screenshot.microlink.io',
+        hostname: 'firebasestorage.googleapis.com',
       },
       {
         protocol: 'https',
         hostname: 'images.unsplash.com',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.vercel.app',
       },
       {
         protocol: 'https',
