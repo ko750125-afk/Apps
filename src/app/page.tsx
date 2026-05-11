@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   description: 'A curated collection of premium web applications and digital tools by RapidForge.',
 };
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
   const apps = await getApps();
 
