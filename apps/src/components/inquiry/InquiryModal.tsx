@@ -72,7 +72,7 @@ export default function InquiryModal({ isOpen, onClose, preselectedApp, initialC
     if (!db || !isOpen) return;
     const fetchApps = async () => {
       try {
-        const snapshot = await getDocs(collection(db, 'rapidforge_apps'));
+        const snapshot = await getDocs(collection(db!, 'rapidforge_apps'));
         const appList = snapshot.docs.map(doc => ({ 
           id: doc.id, 
           name: (doc.data() as any).name 
