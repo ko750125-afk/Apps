@@ -10,9 +10,7 @@ import {
   Mail, 
   Phone, 
   Clock, 
-  CheckCircle, 
   ArrowRight,
-  ExternalLink,
   Loader2,
   AlertCircle,
   Send
@@ -169,8 +167,19 @@ export default function InquiriesPage() {
   const togglePublic = async () => {
     if (!db || !selectedInquiry) return;
     const newPublic = !selectedInquiry.isPublic;
-    await updateDoc(doc(db, 'rapidforge_inquiries', selectedInquiry.id), { isPublic: newPublic });
+    
+    // Optimistic UI update
+    const previousInquiry = { ...selectedInquiry };
     setSelectedInquiry({ ...selectedInquiry, isPublic: newPublic });
+    
+    try {
+      await updateDoc(doc(db, 'rapidforge_inquiries', selectedInquiry.id), { isPublic: newPublic });
+    } catch (err) {
+      console.error('Error toggling public state:', err);
+      // Revert on failure
+      setSelectedInquiry(previousInquiry);
+      alert('상태 변경에 실패했습니다.');
+    }
   };
 
   if (loading) {
