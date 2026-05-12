@@ -4,17 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, orderBy, onSnapshot, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { AdminDashboardContent } from '@/components/admin/AdminDashboardUI';
-import { 
-  MessageSquare, 
-  User, 
-  Mail, 
-  Phone, 
-  Clock, 
-  ArrowRight,
-  Loader2,
-  AlertCircle,
-  Send
-} from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -34,10 +24,10 @@ interface Inquiry {
   phoneNumber?: string;
 }
 
-const CATEGORY_LABELS: Record<string, { label: string; color: string }> = {
-  project: { label: '프로젝트 문의', color: 'bg-blue-500/10 text-blue-500 border-blue-500/20' },
-  new: { label: '신규 의뢰', color: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' },
-  other: { label: '기타 문의', color: 'bg-purple-500/10 text-purple-500 border-purple-500/20' },
+const CATEGORY_LABELS: Record<string, { label: string; className: string }> = {
+  project: { label: '프로젝트', className: 'border-zinc-700 bg-zinc-900 text-zinc-300' },
+  new: { label: '신규', className: 'border-zinc-700 bg-zinc-900 text-zinc-300' },
+  other: { label: '기타', className: 'border-zinc-700 bg-zinc-900 text-zinc-300' },
 };
 
 export default function InquiriesPage() {
@@ -68,67 +58,57 @@ export default function InquiriesPage() {
   const [response, setResponse] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const InfoCard = ({ title, value, subValue, colorSchema }: { title: string, value: string, subValue?: string, colorSchema: 'blue' | 'amber' }) => {
-    const colors = {
-      blue: { bg: 'bg-blue-600/5 border-blue-600/10', text: 'text-blue-500' },
-      amber: { bg: 'bg-amber-500/5 border-amber-500/10', text: 'text-amber-500' },
-    }[colorSchema];
-
-    return (
-      <div className={cn(colors.bg, "border rounded-2xl p-5")}>
-        <p className={cn("text-[10px] font-black uppercase tracking-widest mb-1", colors.text)}>{title}</p>
-        <p className="text-white font-bold">{value}</p>
-        {subValue && <p className="text-neutral-500 text-xs mt-1">{subValue}</p>}
-      </div>
-    );
-  };
+  const InfoCard = ({ title, value, subValue }: { title: string; value: string; subValue?: string }) => (
+    <div className="rounded-lg border border-zinc-800/80 bg-zinc-900/20 px-4 py-3">
+      <p className="text-xs font-medium text-zinc-500">{title}</p>
+      <p className="mt-1 text-sm font-medium text-zinc-100">{value}</p>
+      {subValue && <p className="mt-1 text-xs text-zinc-500">{subValue}</p>}
+    </div>
+  );
 
   const InquiryListItem = ({ inquiry, isSelected, onClick }: { inquiry: Inquiry, isSelected: boolean, onClick: () => void }) => (
     <motion.div
       layoutId={inquiry.id}
       onClick={onClick}
       className={cn(
-        "group relative bg-neutral-900 border transition-all duration-300 p-6 rounded-[2rem] cursor-pointer hover:shadow-2xl hover:shadow-blue-600/5",
-        isSelected ? "border-blue-500 ring-4 ring-blue-500/10" : "border-neutral-800 hover:border-neutral-700"
+        'cursor-pointer rounded-lg border p-4 transition-colors',
+        isSelected
+          ? 'border-zinc-600 bg-zinc-900/40'
+          : 'border-zinc-800/80 bg-zinc-900/10 hover:border-zinc-700 hover:bg-zinc-900/25',
       )}
     >
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-neutral-800 border border-neutral-700 flex items-center justify-center text-neutral-400 group-hover:text-white transition-colors">
-            <User className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="text-white font-bold tracking-tight">{inquiry.userName}</h3>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className={cn(
-                "px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border",
-                CATEGORY_LABELS[inquiry.category || 'project']?.color || 'bg-neutral-800 text-neutral-500 border-neutral-700'
-              )}>
-                {CATEGORY_LABELS[inquiry.category || 'project']?.label || inquiry.appName}
-              </span>
-              {inquiry.appName && inquiry.category === 'project' && (
-                <span className="text-[10px] text-neutral-600 font-bold">{inquiry.appName}</span>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <h3 className="font-medium text-zinc-100 truncate">{inquiry.userName}</h3>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <span
+              className={cn(
+                'inline-flex rounded-md border px-2 py-0.5 text-xs font-medium',
+                CATEGORY_LABELS[inquiry.category || 'project']?.className || 'border-zinc-700 bg-zinc-900 text-zinc-400',
               )}
-            </div>
+            >
+              {CATEGORY_LABELS[inquiry.category || 'project']?.label || inquiry.appName}
+            </span>
+            {inquiry.appName && inquiry.category === 'project' && (
+              <span className="text-xs text-zinc-500 truncate">{inquiry.appName}</span>
+            )}
           </div>
         </div>
-        <div className={cn(
-          "px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border",
-          inquiry.status === 'answered' ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"
-        )}>
-          {inquiry.status === 'answered' ? '답변완료' : '대기중'}
-        </div>
+        <span
+          className={cn(
+            'shrink-0 rounded-md border px-2 py-0.5 text-xs font-medium',
+            inquiry.status === 'answered'
+              ? 'border-zinc-600 bg-zinc-800 text-zinc-300'
+              : 'border-amber-900/40 bg-amber-950/25 text-amber-200/90',
+          )}
+        >
+          {inquiry.status === 'answered' ? '답변됨' : '대기'}
+        </span>
       </div>
-      <p className="text-neutral-400 text-sm line-clamp-2 mb-4 leading-relaxed">
-        {inquiry.content}
+      <p className="mt-3 line-clamp-2 text-sm leading-relaxed text-zinc-500">{inquiry.content}</p>
+      <p className="mt-3 text-xs text-zinc-600">
+        {new Date(inquiry.createdAt).toLocaleString()}
       </p>
-      <div className="flex items-center justify-between text-[11px] text-neutral-600 font-bold">
-        <div className="flex items-center gap-2">
-          <Clock className="w-3 h-3" />
-          {new Date(inquiry.createdAt).toLocaleDateString()}
-        </div>
-        <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0" />
-      </div>
     </motion.div>
   );
 
@@ -183,12 +163,11 @@ export default function InquiriesPage() {
   };
 
   if (loading) {
-// ... existing loading UI ...
     return (
       <AdminDashboardContent>
-        <div className="min-h-[60vh] flex flex-col items-center justify-center">
-          <Loader2 className="w-10 h-10 text-blue-500 animate-spin mb-4" />
-          <p className="text-neutral-500 font-bold uppercase tracking-widest text-xs">Fetching Inquiries...</p>
+        <div className="min-h-[50vh] flex flex-col items-center justify-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
+          <p className="text-sm text-zinc-500">불러오는 중…</p>
         </div>
       </AdminDashboardContent>
     );
@@ -198,20 +177,16 @@ export default function InquiriesPage() {
     <AdminDashboardContent>
       <div className="flex flex-col gap-8">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tight flex items-center gap-3">
-            <MessageSquare className="w-8 h-8 text-blue-500" />
-            고객 문의 관리
-          </h1>
-          <p className="text-neutral-500 text-sm mt-2">고객들의 견적 문의 및 제작 상담 요청을 관리합니다.</p>
+          <h1 className="text-xl font-semibold text-zinc-50">문의</h1>
+          <p className="mt-1 text-sm text-zinc-500">접수·답변을 관리합니다.</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12 lg:gap-8">
           {/* Inquiry List */}
-          <div className="lg:col-span-7 space-y-4">
+          <div className="space-y-3 lg:col-span-7">
             {inquiries.length === 0 ? (
-              <div className="bg-neutral-900/50 border border-neutral-800 rounded-[2.5rem] p-12 text-center">
-                <AlertCircle className="w-12 h-12 text-neutral-700 mx-auto mb-4" />
-                <p className="text-neutral-500 font-bold">접수된 문의가 없습니다.</p>
+              <div className="rounded-lg border border-dashed border-zinc-800 bg-zinc-900/15 px-6 py-14 text-center">
+                <p className="text-sm text-zinc-500">접수된 문의가 없습니다.</p>
               </div>
             ) : (
               inquiries.map((inquiry) => (
@@ -231,102 +206,95 @@ export default function InquiriesPage() {
               {selectedInquiry ? (
                 <motion.div
                   key="detail"
-                  initial={{ opacity: 0, x: 20 }}
+                  initial={{ opacity: 0, x: 12 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20 }}
-                  className="sticky top-8 bg-neutral-900 border border-neutral-800 rounded-[2.5rem] p-8 md:p-10 space-y-8 shadow-2xl"
+                  exit={{ opacity: 0, x: 12 }}
+                  className="sticky top-6 space-y-6 rounded-lg border border-zinc-800/80 bg-zinc-900/20 p-5 md:p-6"
                 >
-                  <div className="space-y-6">
-                    <div className="flex justify-between items-center">
-                      <h2 className="text-2xl font-black text-white tracking-tight">상세 정보</h2>
-                      <button 
+                  <div className="space-y-5">
+                    <div className="flex items-center justify-between gap-3">
+                      <h2 className="text-base font-semibold text-zinc-100">상세</h2>
+                      <button
+                        type="button"
                         onClick={togglePublic}
                         className={cn(
-                          "flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border",
-                          selectedInquiry.isPublic 
-                            ? "bg-blue-600/10 text-blue-500 border-blue-500/20" 
-                            : "bg-neutral-800 text-neutral-500 border-neutral-700"
+                          'rounded-md border px-3 py-1.5 text-xs font-medium transition-colors',
+                          selectedInquiry.isPublic
+                            ? 'border-zinc-600 bg-zinc-800 text-zinc-100'
+                            : 'border-zinc-800 text-zinc-500 hover:bg-zinc-900',
                         )}
                       >
-                        {selectedInquiry.isPublic ? '공개 중' : '비공개'}
+                        {selectedInquiry.isPublic ? '공개' : '비공개'}
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4">
-                      {/* ... existing user info cards ... */}
-                      <div className="bg-black/30 border border-neutral-800/50 rounded-2xl p-5 space-y-4">
-                        <div className="flex items-center gap-3">
-                          <Mail className="w-4 h-4 text-neutral-500" />
-                          <span className="text-sm text-neutral-300 font-medium">{selectedInquiry.userEmail}</span>
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="space-y-3 rounded-lg border border-zinc-800/80 bg-zinc-950/40 p-4">
+                        <div className="flex gap-2 text-sm">
+                          <span className="w-10 shrink-0 text-zinc-500">메일</span>
+                          <span className="text-zinc-200 break-all">{selectedInquiry.userEmail}</span>
                         </div>
-                        <div className="flex items-center gap-3">
-                          <Phone className="w-4 h-4 text-neutral-500" />
-                          <span className="text-sm text-neutral-300 font-medium">
-                            {userDetails?.phoneNumber || '불러오는 중...'}
+                        <div className="flex gap-2 text-sm">
+                          <span className="w-10 shrink-0 text-zinc-500">전화</span>
+                          <span className="text-zinc-200">
+                            {userDetails?.phoneNumber || '—'}
                           </span>
                         </div>
                       </div>
 
-                      <InfoCard 
-                        title="문의 유형"
+                      <InfoCard
+                        title="유형"
                         value={CATEGORY_LABELS[selectedInquiry.category || 'project']?.label || selectedInquiry.appName}
-                        subValue={selectedInquiry.category === 'project' && selectedInquiry.appName ? `프로젝트: ${selectedInquiry.appName}` : undefined}
-                        colorSchema="blue"
+                        subValue={
+                          selectedInquiry.category === 'project' && selectedInquiry.appName
+                            ? `프로젝트: ${selectedInquiry.appName}`
+                            : undefined
+                        }
                       />
 
                       {selectedInquiry.budget && (
-                        <InfoCard 
-                          title="예산 범위"
-                          value={selectedInquiry.budget}
-                          colorSchema="amber"
-                        />
+                        <InfoCard title="예산" value={selectedInquiry.budget} />
                       )}
                     </div>
 
-                    <div className="space-y-3">
-                      <p className="text-[10px] font-black text-neutral-500 uppercase tracking-widest ml-1">문의 내용</p>
-                      <div className="bg-black/40 border border-neutral-800 rounded-2xl p-6 text-sm text-neutral-300 leading-relaxed whitespace-pre-wrap">
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-zinc-500">내용</p>
+                      <div className="rounded-md border border-zinc-800 bg-zinc-950/50 p-4 text-sm leading-relaxed text-zinc-300 whitespace-pre-wrap">
                         {selectedInquiry.content}
                       </div>
                     </div>
 
-                    {/* Admin Response Section */}
-                    <div className="space-y-3 pt-4 border-t border-neutral-800">
-                      <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest ml-1">관리자 답변 (사이트 노출용)</p>
-                      <textarea 
+                    <div className="space-y-2 border-t border-zinc-800/80 pt-5">
+                      <p className="text-xs font-medium text-zinc-500">답변 (노출용)</p>
+                      <textarea
                         value={response}
                         onChange={(e) => setResponse(e.target.value)}
-                        placeholder="고객에게 전달할 답변을 입력하세요. 공개 설정 시 사이트에도 노출됩니다."
-                        className="w-full h-32 bg-black border border-neutral-800 rounded-2xl p-5 text-sm text-white focus:outline-none focus:border-blue-500/50 focus:ring-4 focus:ring-blue-500/10 transition-all resize-none"
+                        placeholder="고객에게 보여 줄 답변을 입력하세요."
+                        className="min-h-[7.5rem] w-full rounded-md border border-zinc-800 bg-zinc-950 p-3 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-zinc-600 focus:outline-none focus:ring-1 focus:ring-zinc-600"
                       />
-                      <div className="flex gap-3">
-                        <button
-                          onClick={saveResponse}
-                          disabled={isUpdating}
-                          className="w-full bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
-                        >
-                          {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                          답변 저장하기
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={saveResponse}
+                        disabled={isUpdating}
+                        className="h-9 w-full rounded-md bg-zinc-100 text-sm font-medium text-zinc-950 hover:bg-zinc-200 disabled:opacity-50"
+                      >
+                        {isUpdating ? '저장 중…' : '저장'}
+                      </button>
                     </div>
 
-                    <div className="pt-4 flex gap-3 opacity-50 hover:opacity-100 transition-opacity">
-                      <a 
+                    <div className="pt-1">
+                      <a
                         href={`mailto:${selectedInquiry.userEmail}`}
-                        className="flex-1 bg-neutral-800 text-neutral-400 font-bold py-3 rounded-xl text-center text-xs hover:bg-neutral-700 transition-all"
+                        className="block w-full rounded-md border border-zinc-800 py-2.5 text-center text-xs font-medium text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200"
                       >
-                        이메일 직접 발송
+                        메일 앱으로 열기
                       </a>
                     </div>
                   </div>
                 </motion.div>
               ) : (
-                <div className="bg-neutral-900/30 border border-dashed border-neutral-800 rounded-[2.5rem] p-20 text-center flex flex-col items-center justify-center">
-                  <div className="w-16 h-16 bg-neutral-900 rounded-2xl flex items-center justify-center text-neutral-700 mb-6">
-                    <MessageSquare className="w-8 h-8" />
-                  </div>
-                  <p className="text-neutral-600 font-bold max-w-[150px]">문의를 선택하여 상세 내용을 확인하세요.</p>
+                <div className="flex min-h-[280px] flex-col items-center justify-center rounded-lg border border-dashed border-zinc-800 bg-zinc-900/10 px-6 py-12 text-center">
+                  <p className="text-sm text-zinc-500">왼쪽에서 문의를 선택하세요.</p>
                 </div>
               )}
             </AnimatePresence>

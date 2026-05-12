@@ -9,7 +9,8 @@ export const metadata: Metadata = {
   description: 'A curated collection of premium web applications and digital tools by RapidForge.',
 };
 
-export const dynamic = 'force-dynamic';
+/** ISR: matches getApps() cache; admin /api/revalidate still invalidates via tag `apps`. */
+export const revalidate = 3600;
 
 export default async function Home() {
   const apps = await getApps();

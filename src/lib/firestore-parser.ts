@@ -16,6 +16,13 @@ export interface FirestoreDocument {
   fields: Record<string, FirestoreValue>;
 }
 
+function parseStringArray(fields: Record<string, FirestoreValue>, key: string): string[] | undefined {
+  const raw = fields[key]?.arrayValue?.values;
+  if (!raw?.length) return undefined;
+  const list = raw.map((v) => v.stringValue).filter((s): s is string => typeof s === 'string' && s.length > 0);
+  return list.length ? list : undefined;
+}
+
 /**
  * Parses a raw Firestore REST document into an AppData object.
  * Eliminates duplication between getApps() and getAppById().
@@ -35,5 +42,7 @@ export function parseFirestoreDocument(doc: FirestoreDocument): AppData {
     status: fields.status?.stringValue || 'Exhibit',
     featured: fields.featured?.booleanValue || false,
     memo: fields.memo?.stringValue || '',
+    techStack: parseStringArray(fields, 'techStack'),
+    imageObjectPosition: fields.imageObjectPosition?.stringValue || '',
   } as AppData;
 }

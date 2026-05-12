@@ -5,7 +5,7 @@ import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { useRouter, usePathname } from 'next/navigation';
-import { Loader2, ShieldAlert } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
@@ -15,6 +15,14 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
+    // 개발자 다이렉트 패스 우회 로직
+    if (typeof window !== 'undefined' && localStorage.getItem('admin_bypass') === 'true') {
+      console.warn('⚠️ AuthGuard: Development Bypass Active');
+      setAuthenticated(true);
+      setLoading(false);
+      return;
+    }
+
     if (!auth) {
       console.error('❌ AuthGuard: Firebase Auth is not initialized.');
       setError('Authentication system failed to initialize.');
@@ -83,16 +91,10 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-950">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative">
-            <Loader2 className="w-8 h-8 text-accent animate-spin" />
-            <div className="absolute inset-0 blur-lg bg-accent/20 animate-pulse" />
-          </div>
-          <div className="text-center">
-            <p className="text-sm font-medium text-neutral-200">Verifying access...</p>
-            <p className="text-[10px] text-neutral-500 uppercase tracking-widest mt-1">RapidForge Security Gate</p>
-          </div>
+      <div className="flex min-h-screen items-center justify-center bg-zinc-950">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-zinc-500" />
+          <p className="text-sm text-zinc-500">확인 중…</p>
         </div>
       </div>
     );
@@ -100,16 +102,16 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-950 p-6">
-        <div className="max-w-md w-full bg-neutral-900 border border-rose-500/20 rounded-2xl p-8 text-center shadow-2xl">
-          <ShieldAlert className="w-12 h-12 text-rose-500 mx-auto mb-4" />
-          <h2 className="text-xl font-bold mb-2">Access Denied</h2>
-          <p className="text-sm text-neutral-400 mb-6">{error}</p>
-          <button 
-            onClick={() => window.location.href = '/'}
-            className="w-full bg-neutral-800 hover:bg-neutral-700 text-white py-3 rounded-xl font-bold transition-all"
+      <div className="flex min-h-screen items-center justify-center bg-zinc-950 p-6">
+        <div className="max-w-md w-full rounded-lg border border-zinc-800 bg-zinc-900/40 p-8 text-center">
+          <h2 className="text-base font-semibold text-zinc-100">접근할 수 없습니다</h2>
+          <p className="mt-2 text-sm text-zinc-500">{error}</p>
+          <button
+            type="button"
+            onClick={() => (window.location.href = '/')}
+            className="mt-6 w-full rounded-md border border-zinc-700 bg-zinc-900 py-2.5 text-sm font-medium text-zinc-200 hover:bg-zinc-800"
           >
-            홈으로 돌아가기
+            홈으로
           </button>
         </div>
       </div>

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Send, MessageSquare, AlertCircle, Loader2, CheckCircle2, ChevronDown, Briefcase, PlusCircle, HelpCircle } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { AppData } from '@/data/apps';
 import { cn } from '@/lib/utils';
@@ -53,6 +53,9 @@ const BUDGET_OPTIONS = [
   '협의 필요',
 ];
 
+/** 포트폴리오 앱과 동일 컬렉션 (useApps / server-apps / 관리자 대시보드) */
+const APPS_COLLECTION = '18_apps_list';
+
 export default function InquiryModal({ isOpen, onClose, preselectedApp, initialCategory }: InquiryModalProps) {
   const [category, setCategory] = useState<InquiryCategory | null>(initialCategory || null);
   const [content, setContent] = useState('');
@@ -72,11 +75,15 @@ export default function InquiryModal({ isOpen, onClose, preselectedApp, initialC
     if (!db || !isOpen) return;
     const fetchApps = async () => {
       try {
-        const snapshot = await getDocs(collection(db!, 'rapidforge_apps'));
-        const appList = snapshot.docs.map(doc => ({ 
-          id: doc.id, 
-          name: (doc.data() as any).name 
-        }));
+        const q = query(collection(db!, APPS_COLLECTION), orderBy('name', 'asc'));
+        const snapshot = await getDocs(q);
+        const appList = snapshot.docs.map((docSnap) => {
+          const data = docSnap.data() as { name?: string };
+          return {
+            id: docSnap.id,
+            name: typeof data.name === 'string' && data.name.trim() ? data.name : docSnap.id,
+          };
+        });
         setApps(appList);
       } catch (err) {
         console.error('Failed to fetch apps:', err);

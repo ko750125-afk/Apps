@@ -17,12 +17,13 @@ const createDefaultFormData = (): AppData => ({
   name: '',
   url: '',
   category: 'Business Website' as Category,
-  date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+  date: new Date().toISOString().slice(0, 7),
   featured: false,
   description: '',
   image: '',
   status: 'Exhibit',
   memo: '',
+  imageObjectPosition: '',
 });
 
 export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) {
@@ -103,17 +104,19 @@ export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) 
       }
 
       // 2. Default Tech Stack Detection
-      const techStackMarkdown = `### 🛠 Technical Specifications
-- **Frontend Framework**: Next.js, React
-- **Backend Architecture**: Cloud Architecture
-- **Language**: TypeScript (Strict Mode)
-- **Styling Strategy**: Tailwind CSS (Utility-first)
+      const techStackMarkdown = `### 기술 사양
 
-### 🚀 Key Features & Implementation
-- **Interactive UI**: High-fidelity user interface with smooth state transitions.
-- **Data Integration**: Robust data synchronization and cloud-native architecture.
-- **Performance**: Optimized asset delivery and fast execution patterns.
-- **Responsive Design**: Mobile-first fluid layout supporting all modern devices.`;
+- **프론트엔드**: Next.js, React
+- **백엔드·인프라**: 클라우드·API 연동
+- **언어**: TypeScript(엄격 모드)
+- **스타일**: Tailwind CSS
+
+### 구현 포인트
+
+- 인터랙티브 UI와 상태 전환
+- 데이터 연동 및 동기화
+- 에셋·렌더링 최적화
+- 모바일 우선 반응형 레이아웃`;
 
       // 3. Final State Update
       setFormData(prev => ({
@@ -125,7 +128,7 @@ export function useAppForm({ initialData, isEditing = false }: UseAppFormProps) 
         memo: techStackMarkdown
       }));
 
-      alert('✅ SYSTEM ANALYSIS COMPLETE: Basic metadata has been synthesized.');
+      alert('메타데이터를 반영했습니다. 필요한 항목은 수동으로 다듬어 주세요.');
 
     } catch (error: any) {
       console.error('❌ Smart Fill Error:', error);

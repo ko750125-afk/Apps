@@ -11,7 +11,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (isPublicPage) {
     return (
-      <div className="min-h-screen bg-neutral-950 text-neutral-50 antialiased selection:bg-accent/30">
+      <div className="min-h-screen bg-zinc-950 text-zinc-100 antialiased selection:bg-zinc-700/50">
         {children}
       </div>
     );

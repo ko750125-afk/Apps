@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion, Variants } from 'framer-motion';
 import { AppData } from '@/data/apps';
-import { cn, getAppImage } from '@/lib/utils';
+import { cn, getAppImage, appImageObjectPositionCss } from '@/lib/utils';
 import { ImageOff } from 'lucide-react';
 
 interface AppCardProps {
@@ -31,28 +31,39 @@ interface CardImageProps {
   isLoaded: boolean;
   appName: string;
   url: string | null;
+  objectPosition: string;
   onImageLoad: () => void;
   onImageError: () => void;
 }
 
 import Image from 'next/image';
 
-const CardImage = ({ displayImage, hasError, isLoaded, appName, url, onImageLoad, onImageError }: CardImageProps) => (
+const CardImage = ({
+  displayImage,
+  hasError,
+  isLoaded,
+  appName,
+  url,
+  objectPosition,
+  onImageLoad,
+  onImageError,
+}: CardImageProps) => (
   <div className="relative aspect-video w-full overflow-hidden bg-[#e0e0e7] group/img">
     {displayImage && !hasError ? (
       <>
         {!isLoaded && (
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_2s_infinite] z-10" />
         )}
-        <Image 
-          src={displayImage} 
+        <Image
+          src={displayImage}
           alt={appName}
           fill
           onLoad={onImageLoad}
           onError={onImageError}
+          style={{ objectPosition: objectPosition }}
           className={cn(
-            "object-cover transition-all duration-700 group-hover:scale-105",
-            isLoaded ? "opacity-100" : "opacity-0"
+            'object-cover transition-all duration-700 group-hover:scale-105',
+            isLoaded ? 'opacity-100' : 'opacity-0',
           )}
           unoptimized
         />
@@ -112,6 +123,7 @@ export default function AppCard({ app, index }: AppCardProps) {
         isLoaded={isLoaded}
         appName={app.name}
         url={app.url}
+        objectPosition={appImageObjectPositionCss(app)}
         onImageLoad={() => setIsLoaded(true)}
         onImageError={() => setHasError(true)}
       />

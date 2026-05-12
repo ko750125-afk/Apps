@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: 'Explore our collection of premium web applications.',
 };
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 3600;
 
 export default async function ProjectsPage() {
   const apps = await getApps();

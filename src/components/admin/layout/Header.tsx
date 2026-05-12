@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { User, Bell, Menu } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { auth, db } from '@/lib/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
@@ -11,105 +11,73 @@ export default function Header({ onMenuClick }: { onMenuClick?: () => void }) {
   const user = auth?.currentUser;
   const router = useRouter();
   const [pendingCount, setPendingCount] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
 
-  // Firestore 실시간 리스너 — pending 상태 문의 건수
   useEffect(() => {
     if (!db) return;
     const q = query(
       collection(db, 'rapidforge_inquiries'),
-      where('status', '==', 'pending')
+      where('status', '==', 'pending'),
     );
 
     const unsubscribe = onSnapshot(q, (snapshot) => {
-      const newCount = snapshot.docs.length;
-      // 건수가 증가하면 애니메이션 트리거
-      if (newCount > pendingCount && pendingCount > 0) {
-        setIsAnimating(true);
-        setTimeout(() => setIsAnimating(false), 1000);
-      }
-      setPendingCount(newCount);
+      setPendingCount(snapshot.docs.length);
     });
 
     return () => unsubscribe();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleBellClick = () => {
+  const handleInquiriesShortcut = () => {
     router.push('/admin/inquiries');
   };
 
   return (
-    <header className="h-16 border-b border-neutral-900 bg-neutral-950/50 backdrop-blur-xl sticky top-0 z-40 flex items-center justify-between px-4 md:px-6">
-      <div className="flex items-center gap-4">
-        {/* Mobile Menu Button */}
-        <button 
+    <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center justify-between border-b border-zinc-800/80 bg-zinc-950/95 px-3 md:px-5 backdrop-blur-sm">
+      <div className="flex min-w-0 items-center gap-3">
+        <button
+          type="button"
           onClick={onMenuClick}
-          className="p-2 -ml-2 rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-900 transition-all md:hidden"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-zinc-800 bg-zinc-900 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200 md:hidden"
+          aria-label="메뉴 열기"
         >
-          <Menu className="w-6 h-6" />
+          <Menu className="h-4 w-4" />
         </button>
-
-        {/* Header Title (Optional, keeping it clean) */}
-        <div className="hidden md:block">
-          <span className="text-xs font-bold text-neutral-600 uppercase tracking-[0.2em]">Management System</span>
-        </div>
+        <span className="hidden text-sm text-zinc-500 md:inline">관리자</span>
       </div>
 
-      <div className="flex items-center gap-4 ml-auto">
-        {/* Notifications Bell */}
-        <button 
-          onClick={handleBellClick}
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={handleInquiriesShortcut}
           className={cn(
-            "flex items-center gap-2 px-3 py-2 rounded-full relative transition-all group",
-            pendingCount > 0 
-              ? "bg-rose-500/10 text-rose-500 hover:bg-rose-500/20 border border-rose-500/20" 
-              : "text-neutral-400 hover:text-neutral-200 hover:bg-neutral-900 border border-transparent"
+            'rounded-md border px-3 py-1.5 text-xs font-medium transition-colors',
+            pendingCount > 0
+              ? 'border-zinc-600 bg-zinc-900 text-zinc-100'
+              : 'border-transparent bg-transparent text-zinc-500 hover:bg-zinc-900 hover:text-zinc-300',
           )}
-          title={pendingCount > 0 ? `미확인 문의 ${pendingCount}건` : '새 문의 없음'}
         >
-          <div className="relative">
-            <Bell className={cn(
-              "w-5 h-5 transition-transform",
-              isAnimating && "animate-[ring_0.5s_ease-in-out_2]",
-              pendingCount > 0 && "text-rose-500"
-            )} />
-            {/* Pulse ring when there are pending items */}
-            {pendingCount > 0 && (
-              <span className="absolute top-0 right-0 w-2.5 h-2.5 -mt-0.5 -mr-0.5">
-                <span className="absolute inset-0 rounded-full bg-rose-500 animate-ping opacity-75" />
-                <span className="relative inline-block w-2.5 h-2.5 bg-rose-500 rounded-full" />
-              </span>
-            )}
-          </div>
-          
-          {/* 미확인 문의 건수 텍스트 표시 (눈에 띄게) */}
-          {pendingCount > 0 && (
-            <span className={cn(
-              "text-xs font-black tracking-wide",
-              isAnimating && "animate-pulse"
-            )}>
-              {pendingCount}건의 새 문의
-            </span>
-          )}
+          문의
+          {pendingCount > 0 ? (
+            <span className="ml-1.5 tabular-nums text-zinc-400">({pendingCount})</span>
+          ) : null}
         </button>
 
-        <div className="h-6 w-px bg-neutral-800 mx-1" />
+        <div className="hidden h-4 w-px bg-zinc-800 sm:block" />
 
-        {/* User Profile */}
-        <div className="flex items-center gap-3 pl-2">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-medium text-neutral-200">{user?.displayName || 'Admin'}</p>
-            <p className="text-xs text-neutral-500 lowercase">{user?.email || 'admin@rapidforge.io'}</p>
-          </div>
-          <div className="w-9 h-9 rounded-full bg-neutral-800 border border-neutral-700 flex items-center justify-center overflow-hidden">
-            {user?.photoURL ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={user.photoURL} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <User className="w-5 h-5 text-neutral-400" />
-            )}
-          </div>
+        <div className="hidden min-w-0 text-right sm:block">
+          <p className="truncate text-sm font-medium text-zinc-200">
+            {user?.displayName || '관리자'}
+          </p>
+          <p className="truncate text-xs text-zinc-500">{user?.email ?? ''}</p>
+        </div>
+        <div className="h-8 w-8 shrink-0 overflow-hidden rounded-full border border-zinc-700 bg-zinc-800">
+          {user?.photoURL ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={user.photoURL} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-[10px] font-medium text-zinc-500">
+              {(user?.displayName || user?.email || '?').charAt(0).toUpperCase()}
+            </div>
+          )}
         </div>
       </div>
     </header>

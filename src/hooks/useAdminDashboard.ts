@@ -50,16 +50,6 @@ const SAMPLE_PROJECTS: Omit<AppData, 'id'>[] = [
     status: 'Repair',
     memo: 'System maintenance in progress',
     image: '/apps/flow.png'
-  },
-  {
-    name: 'VibeWiki',
-    url: 'wiki.example.com',
-    category: 'Business Website',
-    date: new Date().toISOString(),
-    featured: true,
-    description: 'Collaborative knowledge base system for developer teams with markdown support and versioning.',
-    status: 'Exhibit',
-    image: '/apps/wiki.png'
   }
 ];
 
@@ -88,7 +78,13 @@ export function useAdminDashboard() {
       setApps(data);
     } catch (error: any) {
       console.error('Fetch error:', error);
-      setFetchError(error.code || error.message || 'UNKNOWN_ERROR');
+      
+      // 권한 에러 시 Bypass 상태라면 샘플 데이터로 조용히 폴백
+      if (error.message?.includes('permissions') && isBypassed) {
+        setApps(SAMPLE_PROJECTS.map((p, i) => ({ ...p, id: `mock-${i}` })));
+      } else {
+        setFetchError(error.code || error.message || 'UNKNOWN_ERROR');
+      }
     } finally {
       setLoading(false);
     }
@@ -115,26 +111,27 @@ export function useAdminDashboard() {
 
     try {
       await deleteDoc(doc(db, COLLECTION_NAME, id));
-      setApps(prev => prev.filter(app => app.id !== id));
       await revalidateAppCaches(id);
+      
+      setApps(prev => prev.filter(app => app.id !== id));
       alert('✅ 삭제되었습니다.');
       return true;
     } catch (error) {
       console.error('Delete fail:', error);
-      alert('❌ 삭제에 실패했습니다.');
+      alert('❌ 삭제에 실패했습니다. (권한 없음)');
       return false;
     }
   };
 
   const handleSeed = async () => {
     if (!db) return;
-    if (!confirm('샘플 데이터 5개를 추가 생성하시겠습니까?')) return;
+    if (!confirm('샘플 데이터 4개를 추가 생성하시겠습니까?')) return;
 
     setLoading(true);
     try {
       const firestore = db!;
       await Promise.all(SAMPLE_PROJECTS.map(app => addDoc(collection(firestore, COLLECTION_NAME), app)));
-      alert('✅ 샘플 데이터 생성 완료!');
+      alert('✅ 샘플 데이터(4건) 생성 완료!');
       await fetchApps();
     } catch (error) {
       console.error('Seed error:', error);

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { db } from '@/lib/firebase';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { apps as staticApps, AppData } from '@/data/apps';
+import { applyAppEnrichment } from '@/data/app-enrichment';
 
 const COLLECTION_NAME = '18_apps_list';
 
@@ -14,8 +15,14 @@ function isFirebaseReady(): boolean {
 }
 
 export function useApps(initialApps?: AppData[]) {
-  const [apps, setApps] = useState<AppData[]>(initialApps || staticApps);
-  const [loading, setLoading] = useState(true);
+  const hasServerData = (initialApps?.length ?? 0) > 0;
+  const [apps, setApps] = useState<AppData[]>(() =>
+    hasServerData ? initialApps!.map(applyAppEnrichment) : staticApps.map(applyAppEnrichment),
+  );
+  const [loading, setLoading] = useState(() => {
+    if (!isFirebaseReady()) return false;
+    return !hasServerData;
+  });
   const [error, setError] = useState(false);
 
   useEffect(() => {
@@ -31,10 +38,14 @@ export function useApps(initialApps?: AppData[]) {
       q,
       (snapshot) => {
         if (!snapshot.empty) {
-          setApps(snapshot.docs.map(d => ({ id: d.id, ...d.data() } as AppData)));
+          setApps(
+            snapshot.docs.map((d) =>
+              applyAppEnrichment({ id: d.id, ...d.data() } as AppData),
+            ),
+          );
         } else {
           console.info('Firestore collection is empty. Using static fallback data.');
-          setApps(staticApps);
+          setApps(staticApps.map(applyAppEnrichment));
         }
         setError(false);
         setLoading(false);

@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, LogOut, User, ShieldCheck, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { auth, db } from '@/lib/firebase';
 import { onAuthStateChanged, signOut, User as FirebaseUser } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
-import { useRouter, usePathname } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import InquiryModal from '@/components/inquiry/InquiryModal';
 
 export default function Header() {
@@ -17,20 +17,13 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isInquiryOpen, setIsInquiryOpen] = useState(false);
-  const router = useRouter();
+  const [scrollY, setScrollY] = useState(0);
   const pathname = usePathname();
-  
-  const { scrollY } = useScroll();
-  const headerBg = useTransform(
-    scrollY,
-    [0, 50],
-    ['rgba(251, 251, 253, 0.8)', 'rgba(251, 251, 253, 0.95)']
-  );
-  const headerBlur = useTransform(
-    scrollY,
-    [0, 50],
-    ['blur(10px)', 'blur(20px)']
-  );
+
+  const scrollT = Math.min(Math.max(scrollY / 50, 0), 1);
+  const headerBgAlpha = 0.8 + scrollT * 0.15;
+  const headerBg = `rgba(251, 251, 253, ${headerBgAlpha})`;
+  const headerBlurPx = 10 + scrollT * 10;
 
   useEffect(() => {
     if (!auth) return;
@@ -50,16 +43,18 @@ export default function Header() {
         setIsAdmin(false);
       }
     });
-    
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      const y = window.scrollY;
+      setScrollY(y);
+      setIsScrolled(y > 20);
     };
-    
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      unsubscribe();
-      window.removeEventListener('scroll', handleScroll);
-    };
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const handleLogout = async () => {
@@ -80,7 +75,7 @@ export default function Header() {
   return (
     <>
       <motion.header
-        style={{ backgroundColor: headerBg, backdropFilter: headerBlur }}
+        style={{ backgroundColor: headerBg, backdropFilter: `blur(${headerBlurPx}px)` }}
         className={cn(
           "fixed top-0 left-0 right-0 z-50 transition-all duration-300 border-b",
           isScrolled ? "border-black/5 py-4 shadow-sm" : "border-transparent py-6"

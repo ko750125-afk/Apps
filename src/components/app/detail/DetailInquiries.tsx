@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, User, CheckCircle2, ChevronDown, ChevronUp, Lock, Unlock } from 'lucide-react';
+import { MessageSquare, User, CheckCircle2, ChevronDown, ChevronUp, Lock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AppData } from '@/data/apps';
 
@@ -54,8 +54,8 @@ export default function DetailInquiries({ app }: { app: AppData }) {
           <MessageSquare className="w-6 h-6" />
         </div>
         <div>
-          <h2 className="text-3xl font-black text-white tracking-tight">Project Q&A</h2>
-          <p className="text-neutral-500 text-sm font-medium">이 프로젝트에 대해 다른 사용자들이 문의한 내용입니다.</p>
+          <h2 className="text-3xl font-bold text-white tracking-tight">프로젝트 문의·답변</h2>
+          <p className="text-zinc-400 text-sm font-medium">이 프로젝트에 대해 다른 사용자들이 문의한 내용입니다.</p>
         </div>
         <div className="ml-auto">
           <span className="text-xs font-black text-neutral-600 bg-neutral-900 px-4 py-2 rounded-full border border-neutral-800">
@@ -93,8 +93,8 @@ export default function DetailInquiries({ app }: { app: AppData }) {
                   <div>
                     <div className="flex items-center gap-3 mb-2">
                       <span className="text-sm font-bold text-white">{inquiry.userName.charAt(0)}**</span>
-                      <span className="text-[10px] text-neutral-600 font-black uppercase tracking-widest">
-                        {new Date(inquiry.createdAt).toLocaleDateString()}
+                      <span className="text-[11px] text-zinc-500 font-medium tabular-nums">
+                        {new Date(inquiry.createdAt).toLocaleDateString('ko-KR')}
                       </span>
                       {/* 비공개 배지 */}
                       {!isPublic && (
@@ -118,12 +118,12 @@ export default function DetailInquiries({ app }: { app: AppData }) {
                 <div className="shrink-0 ml-4 flex items-center gap-2">
                   {/* 답변 완료 표시 */}
                   <span className={cn(
-                    "text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-full",
-                    isPublic 
-                      ? "text-emerald-500 bg-emerald-500/10" 
-                      : "text-neutral-600 bg-neutral-800/50"
+                    'text-[11px] font-semibold px-2 py-1 rounded-full',
+                    isPublic
+                      ? 'text-emerald-400 bg-emerald-500/10'
+                      : 'text-neutral-500 bg-neutral-800/50',
                   )}>
-                    답변완료
+                    답변 완료
                   </span>
                   {isPublic && (
                     isExpanded ? (
@@ -147,7 +147,7 @@ export default function DetailInquiries({ app }: { app: AppData }) {
                     {/* 공개 문의 내용 (펼쳤을 때) */}
                     <div className="px-8 pb-2">
                       <div className="bg-black/20 border border-neutral-800/50 rounded-2xl p-6">
-                        <p className="text-[10px] font-black text-neutral-600 uppercase tracking-widest mb-2">문의 내용</p>
+                        <p className="text-xs font-medium text-zinc-500 mb-2">문의 내용</p>
                         <p className="text-sm text-neutral-300 leading-relaxed whitespace-pre-wrap">{inquiry.content}</p>
                       </div>
                     </div>
@@ -159,7 +159,7 @@ export default function DetailInquiries({ app }: { app: AppData }) {
                           <CheckCircle2 className="w-5 h-5" />
                         </div>
                         <div>
-                          <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-2">Admin Response</p>
+                          <p className="text-xs font-semibold text-blue-400 mb-2">관리자 답변</p>
                           <p className="text-sm text-neutral-200 leading-relaxed whitespace-pre-wrap">
                             {inquiry.adminResponse}
                           </p>

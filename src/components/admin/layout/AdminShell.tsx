@@ -10,11 +10,11 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-neutral-50 flex overflow-hidden">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex overflow-hidden antialiased">
       {/* Sidebar Overlay (Mobile only) */}
-      {isMobileOpen && (
+        {isMobileOpen && (
         <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] md:hidden"
+          className="fixed inset-0 bg-black/50 z-[55] md:hidden"
           onClick={() => setIsMobileOpen(false)}
         />
       )}
@@ -39,8 +39,8 @@ export default function AdminShell({ children }: { children: React.ReactNode }) 
       >
         <Header onMenuClick={() => setIsMobileOpen(true)} />
         
-        <main className="flex-1 overflow-y-auto overflow-x-hidden relative">
-          <div className="max-w-7xl mx-auto p-4 md:p-8 relative">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden relative bg-zinc-950">
+          <div className="max-w-6xl mx-auto p-4 md:p-8 md:pl-6 relative">
             {children}
           </div>
         </main>
