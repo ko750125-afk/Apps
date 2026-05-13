@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { storage, auth } from '@/lib/firebase';
-import { ref, uploadBytesResumable, getDownloadURL, UploadTask } from 'firebase/storage';
+import { useStorageUpload } from '@/hooks/useStorageUpload';
 import { Upload, X, Loader2, LayoutGrid, Monitor, Move } from 'lucide-react';
 import { cn, parseAppImageFocus, formatImageObjectPositionForSave } from '@/lib/utils';
 
@@ -92,13 +91,9 @@ export default function ImageUpload({
 }: ImageUploadProps) {
   const [remoteUrl, setRemoteUrl] = useState<string | null>(defaultImage?.trim() || null);
   const [localBlobUrl, setLocalBlobUrl] = useState<string | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [error, setError] = useState<string | null>(null);
   const [focus, setFocus] = useState(() => parseAppImageFocus(objectPosition));
 
-  const uploadTaskRef = useRef<UploadTask | null>(null);
-  const uploadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { uploadImage, cancelUpload, isUploading: uploading, progress, error, setError } = useStorageUpload({ maxSizeMB: 5 });
   const localBlobUrlRef = useRef<string | null>(null);
   /** 부모 `defaultImage`와 동기화할 때 마지막으로 반영한 props 값 (업로드 직후 덮어쓰기 방지) */
   const lastSyncedDefaultImageRef = useRef<string | null | undefined>(undefined);
@@ -142,22 +137,14 @@ export default function ImageUpload({
     setLocalBlobUrl(null);
   }, []);
 
-  const clearUploadTimer = () => {
-    if (uploadTimeoutRef.current) {
-      clearTimeout(uploadTimeoutRef.current);
-      uploadTimeoutRef.current = null;
-    }
-  };
-
   useEffect(() => {
     return () => {
-      clearUploadTimer();
       if (localBlobUrlRef.current) {
         URL.revokeObjectURL(localBlobUrlRef.current);
       }
-      uploadTaskRef.current?.cancel();
+      cancelUpload();
     };
-  }, []);
+  }, [cancelUpload]);
 
   const commitFocus = useCallback(() => {
     onObjectPositionChange(formatImageObjectPositionForSave(focusRef.current));
@@ -202,99 +189,23 @@ export default function ImageUpload({
 
   const handleUpload = useCallback(
     async (file: File) => {
-      if (!storage) {
-        setError('Firebase Storage가 초기화되지 않았습니다. .env의 Storage 설정을 확인해 주세요.');
-        return;
-      }
-
-      if (!auth) {
-        setError('Firebase Authentication이 초기화되지 않았습니다.');
-        return;
-      }
-
-      await auth.authStateReady();
-      
-      const isBypassed = typeof window !== 'undefined' && localStorage.getItem('admin_bypass') === 'true';
-
-      if (!auth.currentUser && !isBypassed) {
-        setError('로그인이 필요합니다. 관리자 로그인 후 다시 시도하거나 페이지를 새로고침해 주세요.');
-        return;
-      }
-
-      if (!file.type.startsWith('image/')) {
-        setError('이미지 파일만 업로드할 수 있습니다.');
-        return;
-      }
-
-      if (file.size > 5 * 1024 * 1024) {
-        setError('이미지 크기는 5MB 미만이어야 합니다.');
-        return;
-      }
-
-      uploadTaskRef.current?.cancel();
-      clearUploadTimer();
       revokeLocal();
 
       const objectUrl = URL.createObjectURL(file);
       localBlobUrlRef.current = objectUrl;
       setLocalBlobUrl(objectUrl);
 
-      setUploading(true);
-      setError(null);
-      setProgress(0);
-
-      // Bypass(다이렉트 패스) 모드여도 storage.rules가 공개되어 있으므로 실제 업로드를 진행합니다.
-      if (isBypassed) {
-        console.warn('⚠️ Bypass Mode: Proceeding with actual Storage Upload since rules are open');
-      }
-
-      const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-      
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('path', `apps/${fileName}`);
-
-      // 가짜 프로그래스 바 (API 라우트를 거치므로 실제 진행률을 알 수 없음)
-      let p = 0;
-      const progressInterval = setInterval(() => {
-        p += 10;
-        if (p > 90) p = 90;
-        setProgress(p);
-      }, 300);
-
       try {
-        const response = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-
-        clearInterval(progressInterval);
-
-        if (!response.ok) {
-          const errText = await response.text();
-          if (response.status === 404) {
-             throw new Error('Firebase Storage가 활성화되지 않았습니다. Firebase 콘솔에서 Storage를 시작해주세요.');
-          }
-          throw new Error(errText);
-        }
-
-        const data = await response.json();
-        if (data.error) throw new Error(data.error);
-
+        const url = await uploadImage(file, 'apps');
         revokeLocal();
-        lastSyncedDefaultImageRef.current = data.url;
-        setRemoteUrl(data.url);
-        setProgress(100);
-        onUploadComplete(data.url);
+        lastSyncedDefaultImageRef.current = url;
+        setRemoteUrl(url);
+        onUploadComplete(url);
       } catch (err: any) {
-        clearInterval(progressInterval);
-        console.error('Upload error:', err);
-        setError(err.message || '업로드에 실패했습니다.');
-      } finally {
-        setUploading(false);
+        // error state is managed by useStorageUpload
       }
     },
-    [onUploadComplete, revokeLocal],
+    [onUploadComplete, revokeLocal, uploadImage],
   );
 
   const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -310,12 +221,9 @@ export default function ImageUpload({
   };
 
   const handleRemove = () => {
-    uploadTaskRef.current?.cancel();
-    clearUploadTimer();
+    cancelUpload();
     revokeLocal();
     setRemoteUrl(null);
-    setUploading(false);
-    setProgress(0);
     setError(null);
     lastSyncedDefaultImageRef.current = '';
     onUploadComplete('');
@@ -404,11 +312,7 @@ export default function ImageUpload({
                 <p className="text-xs font-medium text-white">Storage 업로드 중… {Math.round(progress)}%</p>
                 <button
                   type="button"
-                  onClick={() => {
-                    clearUploadTimer();
-                    uploadTaskRef.current?.cancel();
-                    setUploading(false);
-                  }}
+                  onClick={() => cancelUpload()}
                   className="rounded-md border border-white/30 bg-black/40 px-3 py-1.5 text-[11px] font-medium text-white hover:bg-black/60"
                 >
                   업로드만 취소 (미리보기·맞춤 유지)

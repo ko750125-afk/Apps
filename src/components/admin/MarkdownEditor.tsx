@@ -2,8 +2,7 @@
 
 import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { storage } from '@/lib/firebase';
-import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { useStorageUpload } from '@/hooks/useStorageUpload';
 import { Loader2 } from 'lucide-react';
 import '@uiw/react-md-editor/markdown-editor.css';
 import '@uiw/react-markdown-preview/markdown.css';
@@ -19,49 +18,10 @@ interface MarkdownEditorProps {
 }
 
 export default function MarkdownEditor({ value, onChange, placeholder, className }: MarkdownEditorProps) {
-  const [isUploading, setIsUploading] = useState(false);
+  const { uploadImage: hookUploadImage, isUploading } = useStorageUpload({ maxSizeMB: 5 });
 
   const uploadImage = async (file: File): Promise<string> => {
-    if (!storage) {
-      throw new Error("Firebase Storage가 초기화되지 않았습니다.");
-    }
-
-    if (!file.type.startsWith('image/')) {
-      throw new Error("이미지 파일만 업로드할 수 있습니다.");
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      throw new Error("이미지 크기는 5MB 미만이어야 합니다.");
-    }
-
-    setIsUploading(true);
-
-    try {
-      const fileName = `apps/markdown/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-      const storageRef = ref(storage, fileName);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-
-      return new Promise((resolve, reject) => {
-        uploadTask.on(
-          'state_changed',
-          null,
-          (error) => {
-            console.error('Markdown Image Upload Error:', error);
-            reject(error);
-          },
-          async () => {
-            try {
-              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-              resolve(downloadURL);
-            } catch (err) {
-              reject(err);
-            }
-          }
-        );
-      });
-    } finally {
-      setIsUploading(false);
-    }
+    return hookUploadImage(file, 'apps/markdown');
   };
 
   return (
