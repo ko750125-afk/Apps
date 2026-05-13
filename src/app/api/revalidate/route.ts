@@ -8,7 +8,9 @@ export async function GET(request: NextRequest) {
 
   // 1. 단일 통합 일괄 갱신 모드 (가장 안전하고 권장되는 파이프라인)
   if (appId) {
+    // @ts-ignore
     revalidateTag('apps');
+    // @ts-ignore
     revalidateTag(`app-${appId}`);
     revalidatePath('/');
     revalidatePath('/projects');
@@ -25,6 +27,7 @@ export async function GET(request: NextRequest) {
 
   // 2. 개별 태그/경로 갱신 모드 (하위 호환성)
   if (tag) {
+    // @ts-ignore
     revalidateTag(tag);
     return NextResponse.json({ revalidated: true, tag, now: Date.now() });
   }
@@ -35,6 +38,7 @@ export async function GET(request: NextRequest) {
   }
 
   // 3. 기본 전체 갱신
+  // @ts-ignore
   revalidateTag('apps');
   revalidatePath('/');
   revalidatePath('/projects');
