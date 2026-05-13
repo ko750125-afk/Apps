@@ -1,0 +1,9 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      // ⚠️ 임시 개방: 누구나 이미지 업로드/다운로드 가능
+      allow read, write: if true;
+    }
+  }
+}

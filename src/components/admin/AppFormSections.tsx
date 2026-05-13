@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { AppData, CATEGORIES } from '@/data/apps';
 import { FormField, inputClassName, selectClassName } from './AppFormUI';
 import ImageUpload from './ImageUpload';
+import MarkdownEditor from './MarkdownEditor';
 
 interface BaseSectionProps {
   formData: AppData;
@@ -146,15 +147,10 @@ export const AppFormMain = (props: BaseSectionProps & { handleMemoChange: (val: 
         <h3 className="text-sm font-medium text-zinc-200 border-b border-zinc-800/80 pb-3">
           상세 (Markdown)
         </h3>
-        <textarea
-          name="memo"
+        <MarkdownEditor
           value={formData.memo || ''}
-          onChange={(e) => handleMemoChange(e.target.value)}
-          className={cn(
-            inputClassName,
-            'min-h-[320px] resize-y font-mono text-[13px] leading-relaxed md:min-h-[400px]',
-          )}
-          placeholder={'# 기술 스택…\n- 항목'}
+          onChange={handleMemoChange}
+          placeholder={'# 기술 스택…\n- 항목 (이미지를 복사/붙여넣기 할 수 있습니다)'}
         />
       </div>
     </div>

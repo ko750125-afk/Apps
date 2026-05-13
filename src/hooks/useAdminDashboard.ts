@@ -80,6 +80,7 @@ export function useAdminDashboard() {
       console.error('Fetch error:', error);
       
       // 권한 에러 시 Bypass 상태라면 샘플 데이터로 조용히 폴백
+      const isBypassed = typeof window !== 'undefined' && localStorage.getItem('admin_bypass') === 'true';
       if (error.message?.includes('permissions') && isBypassed) {
         setApps(SAMPLE_PROJECTS.map((p, i) => ({ ...p, id: `mock-${i}` })));
       } else {

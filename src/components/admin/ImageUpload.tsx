@@ -243,91 +243,56 @@ export default function ImageUpload({
       setError(null);
       setProgress(0);
 
-      // Bypass(다이렉트 패스) 모드일 경우 가상 업로드 진행
+      // Bypass(다이렉트 패스) 모드여도 storage.rules가 공개되어 있으므로 실제 업로드를 진행합니다.
       if (isBypassed) {
-        console.warn('⚠️ Bypass Mode: Mocking Storage Upload');
-        let p = 0;
-        const interval = setInterval(() => {
-          p += 20;
-          setProgress(p);
-          if (p >= 100) {
-            clearInterval(interval);
-            setUploading(false);
-            const mockUrl = localBlobUrlRef.current || 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80';
-            setRemoteUrl(mockUrl);
-            onUploadComplete(mockUrl);
-          }
-        }, 200);
-        return;
+        console.warn('⚠️ Bypass Mode: Proceeding with actual Storage Upload since rules are open');
       }
 
       const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-      const storageRef = ref(storage, `apps/${fileName}`);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-      uploadTaskRef.current = uploadTask;
+      
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('path', `apps/${fileName}`);
 
-      uploadTimeoutRef.current = setTimeout(() => {
-        uploadTask.cancel();
+      // 가짜 프로그래스 바 (API 라우트를 거치므로 실제 진행률을 알 수 없음)
+      let p = 0;
+      const progressInterval = setInterval(() => {
+        p += 10;
+        if (p > 90) p = 90;
+        setProgress(p);
+      }, 300);
+
+      try {
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        clearInterval(progressInterval);
+
+        if (!response.ok) {
+          const errText = await response.text();
+          if (response.status === 404) {
+             throw new Error('Firebase Storage가 활성화되지 않았습니다. Firebase 콘솔에서 Storage를 시작해주세요.');
+          }
+          throw new Error(errText);
+        }
+
+        const data = await response.json();
+        if (data.error) throw new Error(data.error);
+
+        revokeLocal();
+        lastSyncedDefaultImageRef.current = data.url;
+        setRemoteUrl(data.url);
+        setProgress(100);
+        onUploadComplete(data.url);
+      } catch (err: any) {
+        clearInterval(progressInterval);
+        console.error('Upload error:', err);
+        setError(err.message || '업로드에 실패했습니다.');
+      } finally {
         setUploading(false);
-        setError(
-          '업로드 응답이 없어 중단했습니다. 이미지는 위에서 계속 미리보기됩니다. Storage·네트워크를 확인한 뒤 다시 시도하거나, 아래 URL 입력란에 이미지 주소를 직접 넣을 수 있습니다.',
-        );
-      }, UPLOAD_TIMEOUT_MS);
-
-      uploadTask.on(
-        'state_changed',
-        (snapshot) => {
-          const n = snapshot.totalBytes ? (snapshot.bytesTransferred / snapshot.totalBytes) * 100 : 0;
-          setProgress(n);
-        },
-        (err) => {
-          clearUploadTimer();
-          uploadTaskRef.current = null;
-          const e = err as { code?: string; message?: string; name?: string };
-          const code = e.code || '';
-          const msg = e.message || '';
-
-          /* 의도적 취소(새 파일·제거·타임아웃·언마운트 등) — FirebaseError를 에러로 찍지 않음 */
-          if (e.name === 'AbortError' || code === 'storage/canceled') {
-            setUploading(false);
-            return;
-          }
-
-          console.error('Upload error:', err);
-
-          if (code === 'storage/retry-limit-exceeded') {
-            setError(
-              'Storage 연결이 반복 실패했습니다. Firebase 콘솔의 storageBucket과 .env 값이 같은지, Storage 규칙·네트워크를 확인해 주세요. (선택한 이미지는 그대로 미리보기됩니다)',
-            );
-          } else if (code === 'storage/unauthorized') {
-            setError(
-              'Storage 권한이 없습니다. 규칙에서 로그인 사용자의 업로드를 허용했는지 확인해 주세요. (미리보기는 유지됩니다)',
-            );
-          } else if (msg.includes('CORS') || msg.includes('cross-origin')) {
-            setError('네트워크 또는 확장 프로그램이 요청을 막았을 수 있습니다.');
-          } else {
-            setError(msg ? `업로드 실패: ${msg}` : '업로드에 실패했습니다.');
-          }
-          setUploading(false);
-        },
-        async () => {
-          clearUploadTimer();
-          uploadTaskRef.current = null;
-          try {
-            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            revokeLocal();
-            lastSyncedDefaultImageRef.current = downloadURL;
-            setRemoteUrl(downloadURL);
-            onUploadComplete(downloadURL);
-          } catch (dlErr) {
-            console.error('getDownloadURL', dlErr);
-            setError('업로드는 끝났지만 다운로드 URL을 가져오지 못했습니다. 다시 시도해 주세요.');
-          } finally {
-            setUploading(false);
-            setProgress(100);
-          }
-        },
-      );
+      }
     },
     [onUploadComplete, revokeLocal],
   );
@@ -367,6 +332,32 @@ export default function ImageUpload({
 
   return (
     <div className="w-full space-y-4">
+      {/* 수동 URL 입력 란 (최상단으로 이동) */}
+      <div className="rounded-lg border-2 border-blue-500/50 bg-blue-900/10 p-4 mb-4 space-y-2 shadow-[0_0_15px_rgba(59,130,246,0.1)] relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-1 h-full bg-blue-500 animate-pulse"></div>
+        <label className="text-sm font-bold text-blue-100 flex items-center gap-2">
+          <span>🔗 이미지 주소(URL) 직접 복사+붙여넣기</span>
+          <span className="bg-blue-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full animate-bounce shadow-lg shadow-blue-500/50">여기입니다!</span>
+        </label>
+        <input
+          type="text"
+          placeholder="예: /projects/github.png (채팅창에서 안내받은 주소를 그대로 넣으세요)"
+          value={remoteUrl || ''}
+          onChange={(e) => {
+            const url = e.target.value;
+            setRemoteUrl(url);
+            onUploadComplete(url);
+            lastSyncedDefaultImageRef.current = url;
+            if (url) {
+               setError(null);
+            }
+          }}
+          disabled={uploading}
+          className="w-full bg-black/50 border border-blue-500/50 rounded-lg px-4 py-3 text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/50 transition-all font-mono"
+        />
+        <p className="text-xs text-blue-200/70 font-medium">파이어베이스 스토리지 오류 시 가장 빠르고 확실한 우회 등록 방법입니다.</p>
+      </div>
+
       <div
         className={cn(
           'group relative overflow-hidden rounded-lg border border-dashed transition-colors',
@@ -507,7 +498,7 @@ export default function ImageUpload({
       )}
       {localBlobUrl && !uploading && error && (
         <p className="text-xs text-zinc-500">
-          로컬 미리보기만 있습니다. Storage 오류를 해결한 뒤 다시 업로드하거나 이미지 URL을 직접 입력하세요.
+          로컬 미리보기만 있습니다. Storage 오류를 해결한 뒤 다시 업로드하거나 상단에 이미지 URL을 직접 입력하세요.
         </p>
       )}
     </div>
